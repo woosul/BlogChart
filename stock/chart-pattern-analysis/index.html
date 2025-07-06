@@ -833,7 +833,150 @@
         }
 
         function revealAnswer() {
+            if (!practiceData || practiceData.length === 0) {
+                generateRandomChart();
+                return;
+            }
+
+            // 최근 20일 데이터와 5일 이평선 다시 계산
+            const recentData = practiceData.slice(-20);
+            const ma5Data = [];
+            
+            for (let i = 0; i < practiceData.length; i++) {
+                if (i < 4) {
+                    ma5Data.push(null);
+                } else {
+                    const sum = practiceData.slice(i - 4, i + 1).reduce((acc, item) => acc + item.price, 0);
+                    ma5Data.push(Math.round(sum / 5));
+                }
+            }
+            const recentMA5 = ma5Data.slice(-20);
+
+            // 매수/매도 신호 분석
+            let buySignals = [];
+            let sellSignals = [];
+            
+            for (let i = 1; i < recentData.length; i++) {
+                const prevPrice = recentData[i-1].price;
+                const currentPrice = recentData[i].price;
+                const currentMA5 = recentMA5[i];
+                const prevMA5 = recentMA5[i-1];
+                
+                // 매수 신호: 주가가 5일선 위로 올라가는 구간
+                if (prevPrice <= prevMA5 && currentPrice > currentMA5 && currentMA5) {
+                    buySignals.push(i);
+                }
+                
+                // 매도 신호: 주가가 5일선 아래로 떨어지는 구간  
+                if (prevPrice >= prevMA5 && currentPrice < currentMA5 && currentMA5) {
+                    sellSignals.push(i);
+                }
+            }
+
+            // 가격 기준 지지/저항 분석
+            const prices = recentData.map(d => d.price);
+            const minPrice = Math.min(...prices);
+            const maxPrice = Math.max(...prices);
+            const supportLevel = minPrice + (maxPrice - minPrice) * 0.2; // 하위 20% 구간
+            const resistanceLevel = minPrice + (maxPrice - minPrice) * 0.8; // 상위 20% 구간
+
+            // 추가 매수/매도 신호 (지지/저항 기준)
+            for (let i = 0; i < recentData.length; i++) {
+                const price = recentData[i].price;
+                // 지지선 근처에서 반등
+                if (price <= supportLevel * 1.02 && price >= supportLevel * 0.98) {
+                    if (!buySignals.includes(i)) buySignals.push(i);
+                }
+                // 저항선 근처에서 하락
+                if (price >= resistanceLevel * 0.98 && price <= resistanceLevel * 1.02) {
+                    if (!sellSignals.includes(i)) sellSignals.push(i);
+                }
+            }
+
+            // 결과 표시
             document.getElementById('practiceSignals').style.display = 'flex';
+            
+            // 구체적인 신호 업데이트
+            const buyDays = buySignals.map(i => `${i + 21}일`).join(', ');
+            const sellDays = sellSignals.map(i => `${i + 21}일`).join(', ');
+            
+            document.getElementById('buySignal').textContent = 
+                buySignals.length > 0 ? `매수: ${buyDays}` : '매수 신호 없음';
+            document.getElementById('sellSignal').textContent = 
+                sellSignals.length > 0 ? `매도: ${sellDays}` : '매도 신호 없음';
+
+            // 분석 설명 업데이트
+            let analysisText = '<h3>분석 결과</h3><ul>';
+            
+            if (buySignals.length > 0) {
+                analysisText += `<li><strong>매수 신호:</strong> ${buyDays}에서 주가가 5일 이평선을 상향 돌파하거나 지지선 근처에서 반등</li>`;
+            }
+            
+            if (sellSignals.length > 0) {
+                analysisText += `<li><strong>매도 신호:</strong> ${sellDays}에서 주가가 5일 이평선을 하향 이탈하거나 저항선 근처에서 하락</li>`;
+            }
+            
+            analysisText += '<li><strong>분석 기준:</strong> 5일 이동평균선 돌파, 지지/저항선 근처 움직임</li>';
+            analysisText += '<li><strong>주의사항:</strong> 거래량과 함께 확인하여 신호의 신뢰도를 높이세요</li>';
+            analysisText += '</ul>';
+
+            document.getElementById('practiceExplanation').innerHTML = analysisText;
+
+            // 차트에 신호 표시 (차트 업데이트)
+            updatePracticeChartWithSignals(buySignals, sellSignals, recentData, recentMA5);
+        }
+
+        function updatePracticeChartWithSignals(buySignals, sellSignals, recentData, recentMA5) {
+            const ctx = document.getElementById('practiceChart').getContext('2d');
+            if (currentCharts.practice) currentCharts.practice.destroy();
+
+            // 매수/매도 신호 포인트 데이터 생성
+            const buyPoints = recentData.map((d, i) => buySignals.includes(i) ? d.price : null);
+            const sellPoints = recentData.map((d, i) => sellSignals.includes(i) ? d.price : null);
+
+            currentCharts.practice = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: recentData.map((d, index) => `${index + 21}일`),
+                    datasets: [{
+                        label: '주가',
+                        data: recentData.map(d => d.price),
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderWidth: 2,
+                        tension: 0.4
+                    }, {
+                        label: '5일 이평선',
+                        data: recentMA5,
+                        borderColor: '#f59e0b',
+                        borderDash: [4, 4],
+                        borderWidth: 2,
+                        fill: false,
+                        pointRadius: 0
+                    }, {
+                        label: '매수 신호',
+                        data: buyPoints,
+                        borderColor: '#22c55e',
+                        backgroundColor: '#22c55e',
+                        borderWidth: 0,
+                        pointRadius: 8,
+                        pointHoverRadius: 10,
+                        showLine: false,
+                        pointStyle: 'triangle'
+                    }, {
+                        label: '매도 신호',
+                        data: sellPoints,
+                        borderColor: '#ef4444',
+                        backgroundColor: '#ef4444',
+                        borderWidth: 0,
+                        pointRadius: 8,
+                        pointHoverRadius: 10,
+                        showLine: false,
+                        pointStyle: 'rectRot'
+                    }]
+                },
+                options: getCommonOptions()
+            });
         }
 
         // 페이지 로드 시 첫 번째 차트 그리기
