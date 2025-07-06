@@ -19,8 +19,13 @@ jobs:
     - name: Install and Build
       run: |
         cd stock/volume-price-analyzer
+        rm -rf node_modules/.cache
         npm install
         npm run build
+        echo "=== Build completed ==="
+        ls -la build/
+        echo "=== index.html content ==="
+        head -5 build/index.html
         
     - name: Create deployment structure
       run: |

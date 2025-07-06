@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Volume Price Analyzer</title>
+    <script type="text/javascript">
+      // GitHub Pages SPA redirect hack
+      var pathName = window.location.pathname;
+      var search = window.location.search;
+      if (pathName && pathName !== '/') {
+        window.history.replaceState(null, null, '/' + (search || ''));
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root">Loading...</div>
+    <script>
+      // Redirect to index.html for SPA routing
+      window.location.replace('./index.html');
+    </script>
+  </body>
+</html>
