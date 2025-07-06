@@ -1,0 +1,51 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: 'stock/volume-price-analyzer/package-lock.json'
+        
+    - name: Install dependencies for volume-price-analyzer
+      run: |
+        cd stock/volume-price-analyzer
+        npm ci
+        
+    - name: Build volume-price-analyzer
+      run: |
+        cd stock/volume-price-analyzer
+        npm run build
+        
+    - name: Prepare deployment directory
+      run: |
+        mkdir -p deploy
+        # Copy main page files
+        cp index.html deploy/
+        cp -r common deploy/
+        
+        # Create stock directory and copy volume-price-analyzer
+        mkdir -p deploy/stock/volume-price-analyzer
+        cp -r stock/volume-price-analyzer/build/* deploy/stock/volume-price-analyzer/
+        
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      if: github.ref == 'refs/heads/master'
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./deploy
+        force_orphan: true
