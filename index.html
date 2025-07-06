@@ -1,1 +1,248 @@
-<!doctype html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>거래량 가격 상관관계 분석기</title><meta name="description" content="주식 거래량과 가격의 상관관계를 분석하는 도구"><script defer="defer" src="/BlogChart/stock/volume-price-analyzer/static/js/main.9963c11f.js"></script><link href="/BlogChart/stock/volume-price-analyzer/static/css/main.f855e6bc.css" rel="stylesheet"></head><body><noscript>You need to enable JavaScript to run this app.</noscript><div id="root"></div></body></html>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlogChart - 데이터과학 블로그 차트</title>
+    <link rel="stylesheet" href="./common/css/chart-common.css">
+    <style>
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 60px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .category-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .category-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            border-color: #3b82f6;
+        }
+        
+        .card-header {
+            padding: 30px 25px 20px;
+            text-align: center;
+        }
+        
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
+            color: #3b82f6;
+        }
+        
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 10px;
+        }
+        
+        .card-description {
+            color: #64748b;
+            line-height: 1.6;
+        }
+        
+        .chart-list {
+            padding: 0 25px 25px;
+        }
+        
+        .chart-item {
+            display: block;
+            padding: 12px 15px;
+            margin: 8px 0;
+            background: #f8fafc;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #475569;
+            transition: all 0.2s ease;
+            border-left: 4px solid transparent;
+        }
+        
+        .chart-item:hover {
+            background: #e2e8f0;
+            color: #1e293b;
+            border-left-color: #3b82f6;
+            transform: translateX(5px);
+        }
+        
+        .stats {
+            background: #f8fafc;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .stat-item {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #3b82f6;
+            display: block;
+        }
+        
+        .stat-label {
+            color: #64748b;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>BlogChart</h1>
+        <p>데이터 과학과 실생활을 연결하는 인터랙티브 차트 모음집</p>
+    </div>
+
+    <div class="stats">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <span class="stat-number">25+</span>
+                <div class="stat-label">인터랙티브 차트</div>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">5</span>
+                <div class="stat-label">주제 카테고리</div>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">100%</span>
+                <div class="stat-label">모바일 지원</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="category-grid">
+        <!-- 주식 투자 카테고리 -->
+        <div class="category-card">
+            <div class="card-header">
+                <span class="card-icon">STOCK</span>
+                <h3 class="card-title">주식 투자 분석</h3>
+                <p class="card-description">차트 패턴, 거래량 분석, 이동평균선 등 주식 투자에 필요한 데이터 분석 도구</p>
+            </div>
+            <div class="chart-list">
+                <a href="./stock/chart-pattern-analysis/" class="chart-item">차트 패턴으로 매수/매도 신호 찾기</a>
+                <a href="./stock/volume-price-analyzer/" class="chart-item">거래량과 주가 움직임 상관관계</a>
+                <a href="./stock/moving-average-signals/" class="chart-item">이동평균선 신호 분석</a>
+                <a href="./stock/dividend-analysis/" class="chart-item">배당수익률과 주가 안정성</a>
+                <a href="./stock/" class="chart-item" style="font-weight: 600; color: #3b82f6;">더 많은 주식 차트 보기</a>
+            </div>
+        </div>
+
+        <!-- 개인 금융 카테고리 -->
+        <div class="category-card">
+            <div class="card-header">
+                <span class="card-icon">FINANCE</span>
+                <h3 class="card-title">개인 금융 관리</h3>
+                <p class="card-description">가계부 분석, 저축 최적화, 투자 포트폴리오 등 개인 재정 관리 도구</p>
+            </div>
+            <div class="chart-list">
+                <a href="./finance/budget-analysis/" class="chart-item">개인 가계부 소비 패턴 분석</a>
+                <a href="./finance/saving-optimization/" class="chart-item">저축률 최적화 전략</a>
+                <a href="./finance/loan-comparison/" class="chart-item">대출 상품 비교 분석</a>
+                <a href="./finance/investment-portfolio/" class="chart-item">투자 포트폴리오 구성</a>
+                <a href="./finance/" class="chart-item" style="font-weight: 600; color: #3b82f6;">더 많은 금융 차트 보기</a>
+            </div>
+        </div>
+
+        <!-- 일상생활 카테고리 -->
+        <div class="category-card">
+            <div class="card-header">
+                <span class="card-icon">LIFE</span>
+                <h3 class="card-title">일상생활 분석</h3>
+                <p class="card-description">스마트폰 사용, 운동 데이터, 시간 관리 등 일상생활 패턴 분석 도구</p>
+            </div>
+            <div class="chart-list">
+                <a href="./lifestyle/smartphone-usage/" class="chart-item">스마트폰 사용 패턴과 디지털 웰빙</a>
+                <a href="./lifestyle/fitness-tracking/" class="chart-item">운동과 건강 데이터 분석</a>
+                <a href="./lifestyle/time-management/" class="chart-item">개인 일정 데이터로 시간 관리</a>
+                <a href="./lifestyle/energy-consumption/" class="chart-item">집안 전력 사용량 분석</a>
+                <a href="./lifestyle/" class="chart-item" style="font-weight: 600; color: #3b82f6;">더 많은 라이프스타일 차트 보기</a>
+            </div>
+        </div>
+
+        <!-- 소비자 분석 카테고리 -->
+        <div class="category-card">
+            <div class="card-header">
+                <span class="card-icon">CONSUMER</span>
+                <h3 class="card-title">소비자 분석</h3>
+                <p class="card-description">가격 비교, 브랜드 분석, 부동산 트렌드 등 현명한 소비를 위한 분석 도구</p>
+            </div>
+            <div class="chart-list">
+                <a href="./consumer/price-comparison/" class="chart-item">온라인 쇼핑 가격 비교 분석</a>
+                <a href="./consumer/real-estate-trends/" class="chart-item">부동산 데이터 트렌드 분석</a>
+                <a href="./consumer/brand-value-analysis/" class="chart-item">브랜드별 가성비 분석</a>
+                <a href="./consumer/rental-vs-purchase/" class="chart-item">렌탈 vs 구매 경제성 비교</a>
+                <a href="./consumer/" class="chart-item" style="font-weight: 600; color: #3b82f6;">더 많은 소비자 차트 보기</a>
+            </div>
+        </div>
+
+        <!-- 사회 이슈 카테고리 -->
+        <div class="category-card">
+            <div class="card-header">
+                <span class="card-icon">SOCIAL</span>
+                <h3 class="card-title">사회 이슈 분석</h3>
+                <p class="card-description">미세먼지, 교통, 인구 변화 등 사회 현상을 데이터로 이해하는 분석 도구</p>
+            </div>
+            <div class="chart-list">
+                <a href="./social/air-quality/" class="chart-item">날씨 데이터로 미세먼지 예측</a>
+                <a href="./social/traffic-analysis/" class="chart-item">교통 데이터 최적 경로 분석</a>
+                <a href="./social/social-media-trends/" class="chart-item">소셜미디어 트렌드 분석</a>
+                <a href="./social/demographic-changes/" class="chart-item">인구 이동 데이터 분석</a>
+                <a href="./social/" class="chart-item" style="font-weight: 600; color: #3b82f6;">더 많은 사회 이슈 차트 보기</a>
+            </div>
+        </div>
+    </div>
+
+    <footer style="background: #1e293b; color: white; text-align: center; padding: 40px 20px;">
+        <p>BlogChart - 데이터로 더 나은 결정을 내리세요</p>
+        <p style="margin-top: 10px; opacity: 0.7; font-size: 0.9rem;">
+            모든 차트는 실제 데이터와 과학적 접근법을 기반으로 제작되었습니다.
+        </p>
+    </footer>
+
+    <script src="./common/js/chart-utils.js"></script>
+</body>
+</html>
