@@ -38,3 +38,4 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: stock/volume-price-analyzer/build
         destination_dir: stock/volume-price-analyzer
+        keep_files: true
