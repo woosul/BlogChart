@@ -10,46 +10,27 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
       
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
+    - uses: actions/setup-node@v4
       with:
         node-version: '18'
         
-    - name: Install dependencies
+    - name: Install and Build
       run: |
         cd stock/volume-price-analyzer
         npm install
-        
-    - name: Build React app
-      run: |
-        cd stock/volume-price-analyzer
         npm run build
         
-    - name: Copy files for deployment
+    - name: Create deployment structure
       run: |
-        # Create deployment directory
         mkdir -p dist
-        
-        # Copy main page
         cp index.html dist/
-        
-        # Copy common directory if exists
-        if [ -d "common" ]; then
-          cp -r common dist/
-        fi
-        
-        # Copy React app to subdirectory
+        if [ -d "common" ]; then cp -r common dist/; fi
         mkdir -p dist/stock/volume-price-analyzer
         cp -r stock/volume-price-analyzer/build/* dist/stock/volume-price-analyzer/
         
-        # Debug: show what we're deploying
-        echo "=== Files to deploy ==="
-        find dist -type f -name "*.html" | head -10
-        
-    - name: Deploy to GitHub Pages
+    - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
