@@ -1,28 +1,4 @@
-let currentCharts = {};
-        let currentPattern = 'support';
-        let currentAdvancedPattern = 'headShoulders';
-        let practiceData = null;
-
-        // 고급 패턴 전환
-        function showAdvancedPattern(patternName) {
-            currentAdvancedPattern = patternName;
-            
-            // 버튼 상태 업데이트
-            document.querySelectorAll('.pattern-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            // 차트 업데이트
-            drawAdvancedChart();
-            
-            // 설명 업데이트
-            const explanation = advancedPatternData[patternName].explanation;
-            document.getElementById('advancedExplanation').innerHTML = `
-                <h3>${explanation.title}</h3>
-                <ul>
-                    ${explanation.points.map(point => `<li>${point}</li>`).join('')}
-                </ul>
-            `;
-        }<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -457,6 +433,12 @@ let currentCharts = {};
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        // 전역 변수
+        let currentCharts = {};
+        let currentPattern = 'support';
+        let currentAdvancedPattern = 'headShoulders';
+        let practiceData = null;
+
         // 스토리 데이터
         const storyData = {
             failure: {
@@ -626,8 +608,6 @@ let currentCharts = {};
             }
         };
 
-        let currentAdvancedPattern = 'headShoulders';
-
         // 공통 차트 옵션
         function getCommonOptions() {
             return {
@@ -684,7 +664,7 @@ let currentCharts = {};
             document.getElementById('tab-' + tabName).style.display = 'block';
             event.target.classList.add('active');
             
-            // 탭 그리기
+            // 차트 그리기
             setTimeout(() => {
                 if (tabName === 'story') drawStoryChart();
                 if (tabName === 'basic') drawBasicChart();
@@ -863,6 +843,27 @@ let currentCharts = {};
             `;
         }
 
+        // 고급 패턴 전환
+        function showAdvancedPattern(patternName) {
+            currentAdvancedPattern = patternName;
+            
+            // 버튼 상태 업데이트
+            document.querySelectorAll('.pattern-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // 차트 업데이트
+            drawAdvancedChart();
+            
+            // 설명 업데이트
+            const explanation = advancedPatternData[patternName].explanation;
+            document.getElementById('advancedExplanation').innerHTML = `
+                <h3>${explanation.title}</h3>
+                <ul>
+                    ${explanation.points.map(point => `<li>${point}</li>`).join('')}
+                </ul>
+            `;
+        }
+
         // 고급 패턴 차트
         function drawAdvancedChart() {
             const data = advancedPatternData[currentAdvancedPattern];
@@ -1022,21 +1023,21 @@ let currentCharts = {};
                                     const index = context[0].dataIndex;
                                     const point = Object.values(data.points).find(p => p.index === index);
                                     if (point) {
-                                        return [`📍 ${point.label}`];
+                                        return [`포인트: ${point.label}`];
                                     }
                                     
                                     // 패턴별 추가 정보
                                     if (currentAdvancedPattern === 'headShoulders' && index === data.points.breakout?.index) {
-                                        return ['💥 강한 하락 신호!'];
+                                        return ['강한 하락 신호!'];
                                     }
                                     if (currentAdvancedPattern === 'doubleBottom' && index === data.points.breakout?.index) {
-                                        return ['🚀 강한 상승 신호!'];
+                                        return ['강한 상승 신호!'];
                                     }
                                     if (currentAdvancedPattern === 'cup' && index === data.points.breakout?.index) {
-                                        return ['🎯 목표가 달성 예상!'];
+                                        return ['목표가 달성 예상!'];
                                     }
                                     if (currentAdvancedPattern === 'flag' && index === data.points.breakout?.index) {
-                                        return ['⬆️ 추가 상승 기대!'];
+                                        return ['추가 상승 기대!'];
                                     }
                                     
                                     return [];
@@ -1263,22 +1264,22 @@ let currentCharts = {};
             });
         }
 
+        // iframe 높이 자동 조절 함수
+        function adjustIframeHeight() {
+            const contentHeight = document.body.scrollHeight;
+            
+            // 부모 창에 높이 정보 전달 (PostMessage API)
+            if (window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'resize',
+                    height: contentHeight
+                }, '*');
+            }
+        }
+
         // 페이지 로드 시 첫 번째 차트 그리기
         window.addEventListener('load', function() {
             drawStoryChart();
-            
-            // iframe 높이 자동 조절 함수
-            function adjustIframeHeight() {
-                const contentHeight = document.body.scrollHeight;
-                
-                // 부모 창에 높이 정보 전달 (PostMessage API)
-                if (window.parent !== window) {
-                    window.parent.postMessage({
-                        type: 'resize',
-                        height: contentHeight
-                    }, '*');
-                }
-            }
             
             // 초기 높이 조절
             setTimeout(adjustIframeHeight, 500);
