@@ -3,9 +3,10 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [ master ]
+  workflow_dispatch:
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
     
     steps:
@@ -17,31 +18,39 @@ jobs:
       with:
         node-version: '18'
         
-    - name: Install and build volume-price-analyzer
+    - name: Install dependencies
       run: |
         cd stock/volume-price-analyzer
-        npm ci
-        npm run build
-        echo "Build completed, listing files:"
-        ls -la build/
+        npm install
         
-    - name: Prepare deployment
+    - name: Build React app
       run: |
-        # Copy main site files
-        cp index.html deploy_temp.html
-        cp -r common . 2>/dev/null || echo "No common directory"
+        cd stock/volume-price-analyzer
+        npm run build
+        
+    - name: Copy files for deployment
+      run: |
+        # Create deployment directory
+        mkdir -p dist
+        
+        # Copy main page
+        cp index.html dist/
+        
+        # Copy common directory if exists
+        if [ -d "common" ]; then
+          cp -r common dist/
+        fi
         
         # Copy React app to subdirectory
-        mkdir -p stock/volume-price-analyzer
-        cp -r stock/volume-price-analyzer/build/* stock/volume-price-analyzer/
+        mkdir -p dist/stock/volume-price-analyzer
+        cp -r stock/volume-price-analyzer/build/* dist/stock/volume-price-analyzer/
         
-        # Verify structure
-        echo "Final structure:"
-        find . -name "index.html" -type f
+        # Debug: show what we're deploying
+        echo "=== Files to deploy ==="
+        find dist -type f -name "*.html" | head -10
         
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: .
-        force_orphan: true
+        publish_dir: ./dist
