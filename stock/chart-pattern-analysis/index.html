@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주식 차트 패턴으로 매수/매도 신호 찾기</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: #f8fafc;
+            padding: 15px;
+        }
+        
+        .chart-wrapper {
+            max-width: 100%;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .tab-button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            background: #f1f5f9;
+            color: #64748b;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            font-family: inherit;
+        }
+        
+        .tab-button.active {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(59, 130, 246, 0.4);
+        }
+        
+        .tab-button:hover:not(.active) {
+            background: #e2e8f0;
+        }
+        
+        .chart-area {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .chart-canvas-area {
+            height: 40vh;
+            min-height: 250px;
+            max-height: 400px;
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 15px;
+        }
+        
+        .volume-area {
+            height: 20vh;
+            min-height: 120px;
+            max-height: 200px;
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .pattern-selector {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .pattern-btn {
+            padding: 6px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 11px;
+        }
+        
+        .pattern-btn.active {
+            border-color: #3b82f6;
+            background: #eff6ff;
+            color: #1d4ed8;
+        }
+        
+        .signal-indicator {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        
+        .signal-item {
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: 11px;
+        }
+        
+        .signal-buy {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            color: #166534;
+            border: 2px solid #22c55e;
+        }
+        
+        .signal-sell {
+            background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
+            color: #991b1b;
+            border: 2px solid #ef4444;
+        }
+        
+        .explanation {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-radius: 10px;
+            padding: 15px;
+            border-left: 4px solid #0ea5e9;
+            margin: 15px 0;
+        }
+        
+        .explanation h3 {
+            color: #0c4a6e;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .explanation p {
+            color: #0e7490;
+            line-height: 1.5;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        
+        .explanation ul {
+            list-style: none;
+            margin-top: 10px;
+        }
+        
+        .explanation li {
+            margin: 6px 0;
+            padding-left: 15px;
+            position: relative;
+            color: #0e7490;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        
+        .explanation li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #0ea5e9;
+            font-weight: bold;
+        }
+        
+        .story-box {
+            background: linear-gradient(135deg, #fef7cd 0%, #fef3c7 100%);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid #f59e0b;
+        }
+        
+        .story-box h4 {
+            color: #92400e;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .story-box p {
+            color: #a16207;
+            line-height: 1.4;
+            font-size: 13px;
+        }
+        
+        .success-box {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border-left-color: #22c55e;
+        }
+        
+        .success-box h4 {
+            color: #166534;
+        }
+        
+        .success-box p {
+            color: #15803d;
+        }
+        
+        .failure-box {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border-left-color: #ef4444;
+        }
+        
+        .failure-box h4 {
+            color: #991b1b;
+        }
+        
+        .failure-box p {
+            color: #dc2626;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            text-decoration: none;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            font-size: 12px;
+            margin: 3px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(59, 130, 246, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+        
+        .btn-secondary:hover {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+        
+        @media (max-width: 480px) {
+            .tab-button {
+                font-size: 11px;
+                padding: 6px 12px;
+            }
+            
+            .pattern-btn {
+                font-size: 10px;
+                padding: 5px 10px;
+            }
+            
+            .chart-canvas-area {
+                height: 250px;
+                padding: 10px;
+            }
+            
+            .volume-area {
+                height: 120px;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chart-wrapper">
+        <!-- 탭 버튼 -->
+        <div class="tab-buttons">
+            <button class="tab-button active" onclick="showTab('story')">
+                실패 스토리
+            </button>
+            <button class="tab-button" onclick="showTab('basic')">
+                기본 패턴
+            </button>
+            <button class="tab-button" onclick="showTab('advanced')">
+                고급 패턴
+            </button>
+            <button class="tab-button" onclick="showTab('practice')">
+                실전 연습
+            </button>
+        </div>
+
+        <!-- 스토리 탭 -->
+        <div id="tab-story" class="tab-content">
+            <div class="chart-area">
+                <div class="chart-title">실패한 투자 vs 성공한 투자</div>
+                <div class="chart-canvas-area">
+                    <canvas id="storyChart"></canvas>
+                </div>
+                
+                <div class="signal-indicator">
+                    <div class="signal-item signal-sell">실패 포인트</div>
+                    <div class="signal-item signal-buy">성공 포인트</div>
+                </div>
+            </div>
+            
+            <div class="story-box failure-box" id="storyExplanation">
+                <h4>그때 내 생각</h4>
+                <p>차트의 점들에 마우스를 올려보면 각 시점의 제 생각을 확인할 수 있어요!</p>
+            </div>
+            
+            <div class="explanation">
+                <h3>실패에서 배운 핵심 교훈</h3>
+                <ul>
+                    <li>이동평균선을 무시하고 감정적으로 투자했던 실수</li>
+                    <li>거래량 급증을 위험 신호로 인식하지 못했던 점</li>
+                    <li>손절 기준 없이 막연한 기대에 의존했던 문제</li>
+                    <li>차트 패턴을 체계적으로 공부한 후의 변화</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 기본 패턴 탭 -->
+        <div id="tab-basic" class="tab-content" style="display: none;">
+            <div class="chart-area">
+                <div class="chart-title">기본 차트 패턴 - 지지선과 저항선</div>
+                
+                <div class="pattern-selector">
+                    <button class="pattern-btn active" onclick="showPattern('support')">지지선</button>
+                    <button class="pattern-btn" onclick="showPattern('resistance')">저항선</button>
+                    <button class="pattern-btn" onclick="showPattern('breakout')">돌파</button>
+                    <button class="pattern-btn" onclick="showPattern('triangle')">삼각형</button>
+                </div>
+                
+                <div class="chart-canvas-area">
+                    <canvas id="basicChart"></canvas>
+                </div>
+                
+                <div class="volume-area">
+                    <canvas id="volumeChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="explanation" id="patternExplanation">
+                <h3>지지선 패턴 분석</h3>
+                <ul>
+                    <li>지지선: 주가가 여러 번 반등한 가격대 (매수 관심 구간)</li>
+                    <li>지지선 근처에서 거래량 증가와 함께 반등하면 강한 매수 신호</li>
+                    <li>지지선 이탈 시에는 추가 하락 가능성이 높음</li>
+                    <li>지지선은 한번 깨지면 저항선으로 역할이 바뀜</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 고급 패턴 탭 -->
+        <div id="tab-advanced" class="tab-content" style="display: none;">
+            <div class="chart-area">
+                <div class="chart-title">고급 패턴 - 머리어깨형과 이중바닥</div>
+                
+                <div class="pattern-selector">
+                    <button class="pattern-btn active" onclick="showAdvancedPattern('headShoulders')">머리어깨형</button>
+                    <button class="pattern-btn" onclick="showAdvancedPattern('doubleBottom')">이중바닥</button>
+                    <button class="pattern-btn" onclick="showAdvancedPattern('cup')">컵앤핸들</button>
+                    <button class="pattern-btn" onclick="showAdvancedPattern('flag')">깃발형</button>
+                </div>
+                
+                <div class="chart-canvas-area">
+                    <canvas id="advancedChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="explanation" id="advancedExplanation">
+                <h3>머리어깨형 패턴</h3>
+                <ul>
+                    <li>상승 추세의 마지막에 나타나는 반전 신호</li>
+                    <li>왼쪽 어깨 → 머리 → 오른쪽 어깨 순으로 형성</li>
+                    <li>넥라인 이탈 시 강한 하락 신호</li>
+                    <li>거래량은 머리 부분에서 감소하는 것이 특징</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 실전 연습 탭 -->
+        <div id="tab-practice" class="tab-content" style="display: none;">
+            <div class="chart-area">
+                <div class="chart-title">실전 연습 - 패턴을 찾아보세요!</div>
+                
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <button class="btn btn-primary" onclick="generateRandomChart()">
+                        새로운 차트 생성
+                    </button>
+                    <button class="btn btn-secondary" onclick="revealAnswer()">
+                        정답 확인
+                    </button>
+                </div>
+                
+                <div class="chart-canvas-area">
+                    <canvas id="practiceChart"></canvas>
+                </div>
+                
+                <div class="signal-indicator" id="practiceSignals" style="display: none;">
+                    <div class="signal-item signal-buy" id="buySignal">매수 구간</div>
+                    <div class="signal-item signal-sell" id="sellSignal">매도 구간</div>
+                </div>
+            </div>
+            
+            <div class="explanation" id="practiceExplanation">
+                <h3>연습 문제</h3>
+                <p>위 차트에서 매수와 매도 타이밍을 찾아보세요. 이동평균선, 거래량, 지지/저항선을 종합적으로 고려해보세요!</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // 전역 변수
+        let currentCharts = {};
+        let currentPattern = 'support';
+        let currentAdvancedPattern = 'headShoulders';
+        let practiceData = null;
+
+        // 스토리 데이터
+        const storyData = {
+            failure: {
+                labels: ['매수 시점', '1주 후', '2주 후', '손절매'],
+                price: [68000, 66500, 64000, 61500],
+                volume: [15000000, 18000000, 22000000, 25000000],
+                ma20: [69500, 69000, 68200, 67000],
+                stories: [
+                    "김과장님이 삼성전자 좋다고 해서 68,000원에 매수. 이동평균선이 뭔지도 몰랐어요.",
+                    "어? 좀 떨어졌네... 그래도 삼성전자인데 괜찮겠지? 라고 생각했습니다.",
+                    "계속 떨어지는데... 뉴스를 찾아봐도 특별한 악재는 없었어요.",
+                    "더 이상 못 견디겠어서 61,500원에 손절매. 10만원 손실"
+                ]
+            },
+            success: {
+                labels: ['관망', '신호 포착', '매수', '익절'],
+                price: [62000, 63800, 65500, 69500],
+                volume: [14000000, 16000000, 24000000, 32000000],
+                ma20: [63500, 63200, 63800, 66100],
+                stories: [
+                    "이번엔 이동평균선을 확인하고 신중하게 관망했어요.",
+                    "5일선 위로 올라오고 거래량도 늘어나네! 좋은 신호예요.",
+                    "확신을 가지고 65,500원에 매수! 이번엔 근거가 있습니다.",
+                    "목표가 도달해서 69,500원에 익절. 8만원 수익!"
+                ]
+            }
+        };
+
+        // 패턴 데이터
+        const patternData = {
+            support: {
+                price: [60000, 62000, 61000, 60500, 63000, 62500, 64000, 66000],
+                lines: { support: 60000 },
+                explanation: {
+                    title: "지지선 패턴 분석",
+                    points: [
+                        "지지선: 주가가 여러 번 반등한 가격대 (매수 관심 구간)",
+                        "지지선 근처에서 거래량 증가와 함께 반등하면 강한 매수 신호",
+                        "지지선 이탈 시에는 추가 하락 가능성이 높음",
+                        "지지선은 한번 깨지면 저항선으로 역할이 바뀜"
+                    ]
+                }
+            },
+            resistance: {
+                price: [58000, 60000, 62000, 64000, 63500, 64200, 63800, 62000],
+                lines: { resistance: 64000 },
+                explanation: {
+                    title: "저항선 패턴 분석", 
+                    points: [
+                        "저항선: 주가가 여러 번 하락한 가격대 (매도 관심 구간)",
+                        "저항선 근처에서는 매도 압력이 강해져 상승이 제한됨",
+                        "저항선 돌파 시 대량 거래량과 함께라면 강한 상승 신호",
+                        "돌파된 저항선은 이후 지지선 역할을 하게 됨"
+                    ]
+                }
+            },
+            breakout: {
+                price: [61000, 61500, 62000, 61800, 62200, 63500, 65000, 67000],
+                lines: { resistance: 62500 },
+                explanation: {
+                    title: "돌파 패턴 분석",
+                    points: [
+                        "저항선을 힘있게 돌파하면서 상승하는 패턴",
+                        "돌파 시점에 거래량이 크게 증가하는 것이 핵심",
+                        "돌파 후 다시 저항선(현재는 지지선) 위에서 지지받으면 확실한 신호",
+                        "가짜 돌파를 주의해야 함 - 거래량 없는 돌파는 위험"
+                    ]
+                }
+            },
+            triangle: {
+                price: [60000, 61000, 60500, 61200, 60800, 61100, 60900, 62500],
+                lines: { support: [60000, 60900], resistance: [61000, 61100] },
+                explanation: {
+                    title: "삼각형 패턴 분석",
+                    points: [
+                        "상승하는 지지선과 하락하는 저항선이 만나는 패턴",
+                        "변동폭이 점차 줄어들면서 삼각형 모양을 형성",
+                        "끝 부분에서 어느 방향으로든 크게 움직일 가능성 높음",
+                        "돌파 방향과 거래량을 확인하여 매매 방향 결정"
+                    ]
+                }
+            }
+        };
+
+        // 고급 패턴 데이터
+        const advancedPatternData = {
+            headShoulders: {
+                price: [58000, 62000, 60000, 65000, 63000, 68000, 65000, 62000, 60000, 57000, 55000],
+                volume: [20000000, 25000000, 22000000, 35000000, 30000000, 40000000, 28000000, 32000000, 38000000, 45000000, 50000000],
+                points: {
+                    leftShoulder: { index: 1, label: "왼쪽 어깨" },
+                    head: { index: 5, label: "머리" },
+                    rightShoulder: { index: 7, label: "오른쪽 어깨" },
+                    neckline: { price: 60000, label: "넥라인" },
+                    breakout: { index: 9, label: "넥라인 이탈" }
+                },
+                explanation: {
+                    title: "머리어깨형 패턴",
+                    points: [
+                        "상승 추세의 마지막에 나타나는 강력한 하락 반전 신호",
+                        "왼쪽 어깨 → 머리 → 오른쪽 어깨 순으로 형성되며 각 고점이 낮아짐",
+                        "넥라인(두 저점을 연결한 선) 이탈 시 강한 하락 신호 확정",
+                        "거래량은 머리 부분에서 감소하고 넥라인 이탈 시 급증하는 것이 특징"
+                    ]
+                }
+            },
+            doubleBottom: {
+                price: [65000, 60000, 58000, 62000, 64000, 61000, 58000, 61000, 65000, 68000, 72000],
+                volume: [18000000, 25000000, 35000000, 22000000, 20000000, 28000000, 40000000, 30000000, 35000000, 45000000, 50000000],
+                points: {
+                    firstBottom: { index: 2, label: "첫 번째 바닥" },
+                    peak: { index: 4, label: "중간 고점" },
+                    secondBottom: { index: 6, label: "두 번째 바닥" },
+                    neckline: { price: 64000, label: "저항선" },
+                    breakout: { index: 9, label: "저항선 돌파" }
+                },
+                explanation: {
+                    title: "이중바닥 패턴",
+                    points: [
+                        "하락 추세의 마지막에 나타나는 강력한 상승 반전 신호",
+                        "비슷한 가격대에서 두 번의 저점을 형성하여 W자 모양 완성",
+                        "두 번째 바닥에서는 첫 번째보다 거래량이 적은 것이 일반적",
+                        "중간 고점을 연결한 저항선 돌파 시 상승 신호 확정"
+                    ]
+                }
+            },
+            cup: {
+                price: [60000, 58000, 56000, 55000, 57000, 59000, 61000, 62000, 61000, 60000, 61500, 64000],
+                volume: [25000000, 22000000, 20000000, 18000000, 20000000, 22000000, 25000000, 28000000, 20000000, 18000000, 35000000, 45000000],
+                points: {
+                    cupStart: { index: 0, label: "컵 시작" },
+                    cupBottom: { index: 3, label: "컵 바닥" },
+                    cupEnd: { index: 7, label: "컵 완성" },
+                    handleStart: { index: 7, label: "핸들 시작" },
+                    handleEnd: { index: 9, label: "핸들 끝" },
+                    breakout: { index: 11, label: "돌파" }
+                },
+                explanation: {
+                    title: "컵앤핸들 패턴",
+                    points: [
+                        "상승 중 일시 조정 후 재상승하는 지속 패턴",
+                        "컵 모양의 둥근 바닥과 작은 핸들(깃발) 형태로 구성",
+                        "컵 형성 기간은 7주~65주, 핸들은 1주~4주가 일반적",
+                        "핸들 끝에서 거래량 증가와 함께 돌파 시 강한 상승 신호"
+                    ]
+                }
+            },
+            flag: {
+                price: [55000, 60000, 65000, 70000, 68000, 69000, 67000, 68000, 66000, 67000, 72000, 75000],
+                volume: [30000000, 35000000, 40000000, 50000000, 25000000, 20000000, 18000000, 22000000, 20000000, 25000000, 45000000, 55000000],
+                points: {
+                    poleStart: { index: 0, label: "깃대 시작" },
+                    poleEnd: { index: 3, label: "깃대 끝" },
+                    flagStart: { index: 3, label: "깃발 시작" },
+                    flagEnd: { index: 9, label: "깃발 끝" },
+                    breakout: { index: 10, label: "깃발 돌파" }
+                },
+                explanation: {
+                    title: "깃발형 패턴",
+                    points: [
+                        "급격한 상승(깃대) 후 작은 하향 조정(깃발)이 나타나는 지속 패턴",
+                        "깃발 구간에서는 거래량이 현저히 감소하는 것이 특징",
+                        "깃발 기간은 보통 1~3주 정도로 짧은 편",
+                        "깃발 상단 돌파 시 깃대 길이만큼 추가 상승 기대"
+                    ]
+                }
+            }
+        };
+
+        // 공통 차트 옵션
+        function getCommonOptions() {
+            return {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 15,
+                            font: {
+                                size: 11,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            font: {
+                                size: 10
+                            }
+                        }
+                    },
+                    y: {
+                        ticks: {
+                            font: {
+                                size: 10
+                            },
+                            callback: function(value) {
+                                return value.toLocaleString() + '원';
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        // 탭 전환 함수
+        function showTab(tabName) {
+            // 모든 탭 숨기기
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
+            
+            // 모든 버튼 비활성화
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 선택된 탭 보이기
+            document.getElementById('tab-' + tabName).style.display = 'block';
+            event.target.classList.add('active');
+            
+            // 차트 그리기
+            setTimeout(() => {
+                if (tabName === 'story') drawStoryChart();
+                if (tabName === 'basic') drawBasicChart();
+                if (tabName === 'advanced') {
+                    drawAdvancedChart();
+                    // 고급 패턴 설명도 업데이트
+                    const explanation = advancedPatternData[currentAdvancedPattern].explanation;
+                    document.getElementById('advancedExplanation').innerHTML = `
+                        <h3>${explanation.title}</h3>
+                        <ul>
+                            ${explanation.points.map(point => `<li>${point}</li>`).join('')}
+                        </ul>
+                    `;
+                }
+                if (tabName === 'practice') drawPracticeChart();
+            }, 100);
+        }
+
+        // 스토리 차트 그리기
+        function drawStoryChart() {
+            const ctx = document.getElementById('storyChart').getContext('2d');
+            if (currentCharts.story) currentCharts.story.destroy();
+
+            currentCharts.story = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['시작', '1주차', '2주차', '3주차'],
+                    datasets: [{
+                        label: '실패한 투자',
+                        data: storyData.failure.price,
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        pointBackgroundColor: '#ef4444',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6
+                    }, {
+                        label: '성공한 투자',
+                        data: storyData.success.price,
+                        borderColor: '#22c55e',
+                        backgroundColor: 'rgba(34, 197, 94, 0.2)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        pointBackgroundColor: '#22c55e',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6
+                    }]
+                },
+                options: {
+                    ...getCommonOptions(),
+                    onHover: (event, elements) => {
+                        if (elements.length > 0) {
+                            const datasetIndex = elements[0].datasetIndex;
+                            const index = elements[0].index;
+                            const story = datasetIndex === 0 ? 
+                                storyData.failure.stories[index] : 
+                                storyData.success.stories[index];
+                            
+                            const boxClass = datasetIndex === 0 ? 'failure-box' : 'success-box';
+                            document.getElementById('storyExplanation').className = `story-box ${boxClass}`;
+                            document.getElementById('storyExplanation').innerHTML = `
+                                <h4>${datasetIndex === 0 ? '실패' : '성공'} 시점의 생각</h4>
+                                <p>${story}</p>
+                            `;
+                        }
+                    }
+                }
+            });
+        }
+
+        // 기본 패턴 차트 그리기
+        function drawBasicChart() {
+            const data = patternData[currentPattern];
+            const ctx = document.getElementById('basicChart').getContext('2d');
+            if (currentCharts.basic) currentCharts.basic.destroy();
+
+            const datasets = [{
+                label: '주가',
+                data: data.price,
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                borderWidth: 2,
+                tension: 0.4
+            }];
+
+            // 지지선/저항선 추가
+            if (data.lines.support) {
+                datasets.push({
+                    label: '지지선',
+                    data: new Array(data.price.length).fill(data.lines.support),
+                    borderColor: '#22c55e',
+                    borderDash: [8, 4],
+                    borderWidth: 2,
+                    fill: false,
+                    pointRadius: 0
+                });
+            }
+
+            if (data.lines.resistance) {
+                datasets.push({
+                    label: '저항선',
+                    data: new Array(data.price.length).fill(data.lines.resistance),
+                    borderColor: '#ef4444',
+                    borderDash: [8, 4],
+                    borderWidth: 2,
+                    fill: false,
+                    pointRadius: 0
+                });
+            }
+
+            currentCharts.basic = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['1주', '2주', '3주', '4주', '5주', '6주', '7주', '8주'],
+                    datasets: datasets
+                },
+                options: getCommonOptions()
+            });
+
+            // 거래량 차트
+            const volumeCtx = document.getElementById('volumeChart').getContext('2d');
+            if (currentCharts.volume) currentCharts.volume.destroy();
+
+            currentCharts.volume = new Chart(volumeCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['1주', '2주', '3주', '4주', '5주', '6주', '7주', '8주'],
+                    datasets: [{
+                        label: '거래량',
+                        data: [15000000, 18000000, 22000000, 16000000, 20000000, 35000000, 28000000, 32000000],
+                        backgroundColor: 'rgba(139, 92, 246, 0.8)',
+                        borderColor: '#8b5cf6',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    ...getCommonOptions(),
+                    scales: {
+                        ...getCommonOptions().scales,
+                        y: {
+                            ticks: {
+                                font: {
+                                    size: 10
+                                },
+                                callback: function(value) {
+                                    return (value / 1000000).toFixed(0) + 'M';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 패턴 전환
+        function showPattern(patternName) {
+            currentPattern = patternName;
+            
+            // 버튼 상태 업데이트
+            document.querySelectorAll('.pattern-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // 차트 업데이트
+            drawBasicChart();
+            
+            // 설명 업데이트
+            const explanation = patternData[patternName].explanation;
+            document.getElementById('patternExplanation').innerHTML = `
+                <h3>${explanation.title}</h3>
+                <ul>
+                    ${explanation.points.map(point => `<li>${point}</li>`).join('')}
+                </ul>
+            `;
+        }
+
+        // 고급 패턴 전환
+        function showAdvancedPattern(patternName) {
+            currentAdvancedPattern = patternName;
+            
+            // 버튼 상태 업데이트
+            document.querySelectorAll('.pattern-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // 차트 업데이트
+            drawAdvancedChart();
+            
+            // 설명 업데이트
+            const explanation = advancedPatternData[patternName].explanation;
+            document.getElementById('advancedExplanation').innerHTML = `
+                <h3>${explanation.title}</h3>
+                <ul>
+                    ${explanation.points.map(point => `<li>${point}</li>`).join('')}
+                </ul>
+            `;
+        }
+
+        // 고급 패턴 차트
+        function drawAdvancedChart() {
+            const data = advancedPatternData[currentAdvancedPattern];
+            const ctx = document.getElementById('advancedChart').getContext('2d');
+            if (currentCharts.advanced) currentCharts.advanced.destroy();
+
+            // 기본 데이터셋
+            const datasets = [{
+                label: '주가',
+                data: data.price,
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                borderWidth: 2,
+                tension: 0.4
+            }];
+
+            // 패턴별 특수 라인 추가
+            if (currentAdvancedPattern === 'headShoulders' || currentAdvancedPattern === 'doubleBottom') {
+                // 넥라인/저항선 추가
+                const linePrice = data.points.neckline.price;
+                datasets.push({
+                    label: data.points.neckline.label,
+                    data: new Array(data.price.length).fill(linePrice),
+                    borderColor: '#ef4444',
+                    borderDash: [8, 4],
+                    borderWidth: 2,
+                    fill: false,
+                    pointRadius: 0
+                });
+            }
+
+            // 패턴별 특수 표시 추가
+            if (currentAdvancedPattern === 'headShoulders') {
+                // 머리어깨형 - 어깨와 머리 강조
+                const shoulderHeadData = data.price.map((price, index) => {
+                    if (index === data.points.leftShoulder.index || 
+                        index === data.points.head.index || 
+                        index === data.points.rightShoulder.index) {
+                        return price;
+                    }
+                    return null;
+                });
+                
+                datasets.push({
+                    label: '어깨와 머리',
+                    data: shoulderHeadData,
+                    borderColor: '#22c55e',
+                    backgroundColor: '#22c55e',
+                    borderWidth: 0,
+                    pointRadius: 10,
+                    pointHoverRadius: 12,
+                    showLine: false,
+                    pointStyle: 'triangle'
+                });
+            }
+            
+            if (currentAdvancedPattern === 'doubleBottom') {
+                // 이중바닥 - 두 바닥 강조
+                const bottomData = data.price.map((price, index) => {
+                    if (index === data.points.firstBottom.index || 
+                        index === data.points.secondBottom.index) {
+                        return price;
+                    }
+                    return null;
+                });
+                
+                datasets.push({
+                    label: '이중 바닥',
+                    data: bottomData,
+                    borderColor: '#22c55e',
+                    backgroundColor: '#22c55e',
+                    borderWidth: 0,
+                    pointRadius: 10,
+                    pointHoverRadius: 12,
+                    showLine: false,
+                    pointStyle: 'rect'
+                });
+            }
+            
+            if (currentAdvancedPattern === 'cup') {
+                // 컵앤핸들 - 핸들 구간 강조
+                const handleData = data.price.map((price, index) => {
+                    if (index >= data.points.handleStart.index && 
+                        index <= data.points.handleEnd.index) {
+                        return price;
+                    }
+                    return null;
+                });
+                
+                datasets.push({
+                    label: '핸들 구간',
+                    data: handleData,
+                    borderColor: '#8b5cf6',
+                    backgroundColor: 'rgba(139, 92, 246, 0.3)',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 0
+                });
+            }
+            
+            if (currentAdvancedPattern === 'flag') {
+                // 깃발형 - 깃대와 깃발 구분
+                const poleData = data.price.map((price, index) => {
+                    if (index <= data.points.poleEnd.index) {
+                        return price;
+                    }
+                    return null;
+                });
+                
+                const flagData = data.price.map((price, index) => {
+                    if (index >= data.points.flagStart.index && 
+                        index <= data.points.flagEnd.index) {
+                        return price;
+                    }
+                    return null;
+                });
+                
+                datasets.push({
+                    label: '깃대 (급상승)',
+                    data: poleData,
+                    borderColor: '#22c55e',
+                    backgroundColor: 'rgba(34, 197, 94, 0.3)',
+                    borderWidth: 4,
+                    tension: 0.4,
+                    pointRadius: 0
+                });
+                
+                datasets.push({
+                    label: '깃발 (조정)',
+                    data: flagData,
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245, 158, 11, 0.3)',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    pointRadius: 0
+                });
+            }
+
+            // 거래량 정보를 위한 라벨 생성
+            const labels = data.price.map((_, index) => `${index + 1}주`);
+
+            currentCharts.advanced = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: datasets
+                },
+                options: {
+                    ...getCommonOptions(),
+                    plugins: {
+                        ...getCommonOptions().plugins,
+                        tooltip: {
+                            ...getCommonOptions().plugins.tooltip,
+                            callbacks: {
+                                afterBody: function(context) {
+                                    const index = context[0].dataIndex;
+                                    const point = Object.values(data.points).find(p => p.index === index);
+                                    if (point) {
+                                        return [`포인트: ${point.label}`];
+                                    }
+                                    
+                                    // 패턴별 추가 정보
+                                    if (currentAdvancedPattern === 'headShoulders' && index === data.points.breakout?.index) {
+                                        return ['강한 하락 신호!'];
+                                    }
+                                    if (currentAdvancedPattern === 'doubleBottom' && index === data.points.breakout?.index) {
+                                        return ['강한 상승 신호!'];
+                                    }
+                                    if (currentAdvancedPattern === 'cup' && index === data.points.breakout?.index) {
+                                        return ['목표가 달성 예상!'];
+                                    }
+                                    if (currentAdvancedPattern === 'flag' && index === data.points.breakout?.index) {
+                                        return ['추가 상승 기대!'];
+                                    }
+                                    
+                                    return [];
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 실전 연습 차트
+        function drawPracticeChart() {
+            generateRandomChart();
+        }
+
+        function generateRandomChart() {
+            // 40일치 데이터 생성 (5일 이평선이 보이도록)
+            practiceData = [];
+            let price = 65000;
+            
+            for (let i = 0; i < 40; i++) {
+                const change = (Math.random() - 0.5) * 0.06; // ±3% 변동
+                price = price * (1 + change);
+                const volume = Math.floor(Math.random() * 30000000) + 15000000;
+                
+                practiceData.push({
+                    date: `${i + 1}일`,
+                    price: Math.round(price),
+                    volume: volume
+                });
+            }
+
+            // 5일 이동평균선 계산 (더 짧은 기간으로 변경)
+            const ma5Data = [];
+            for (let i = 0; i < practiceData.length; i++) {
+                if (i < 4) {
+                    ma5Data.push(null);
+                } else {
+                    const sum = practiceData.slice(i - 4, i + 1).reduce((acc, item) => acc + item.price, 0);
+                    ma5Data.push(Math.round(sum / 5));
+                }
+            }
+
+            // 최근 20일만 표시 (차트가 너무 복잡하지 않도록)
+            const recentData = practiceData.slice(-20);
+            const recentMA5 = ma5Data.slice(-20);
+
+            const ctx = document.getElementById('practiceChart').getContext('2d');
+            if (currentCharts.practice) currentCharts.practice.destroy();
+
+            currentCharts.practice = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: recentData.map((d, index) => `${index + 21}일`),
+                    datasets: [{
+                        label: '주가',
+                        data: recentData.map(d => d.price),
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderWidth: 2,
+                        tension: 0.4
+                    }, {
+                        label: '5일 이평선',
+                        data: recentMA5,
+                        borderColor: '#f59e0b',
+                        borderDash: [4, 4],
+                        borderWidth: 2,
+                        fill: false,
+                        pointRadius: 0
+                    }]
+                },
+                options: getCommonOptions()
+            });
+
+            // 정답 숨기기
+            document.getElementById('practiceSignals').style.display = 'none';
+        }
+
+        function revealAnswer() {
+            if (!practiceData || practiceData.length === 0) {
+                generateRandomChart();
+                return;
+            }
+
+            // 최근 20일 데이터와 5일 이평선 다시 계산
+            const recentData = practiceData.slice(-20);
+            const ma5Data = [];
+            
+            for (let i = 0; i < practiceData.length; i++) {
+                if (i < 4) {
+                    ma5Data.push(null);
+                } else {
+                    const sum = practiceData.slice(i - 4, i + 1).reduce((acc, item) => acc + item.price, 0);
+                    ma5Data.push(Math.round(sum / 5));
+                }
+            }
+            const recentMA5 = ma5Data.slice(-20);
+
+            // 매수/매도 신호 분석
+            let buySignals = [];
+            let sellSignals = [];
+            
+            for (let i = 1; i < recentData.length; i++) {
+                const prevPrice = recentData[i-1].price;
+                const currentPrice = recentData[i].price;
+                const currentMA5 = recentMA5[i];
+                const prevMA5 = recentMA5[i-1];
+                
+                // 매수 신호: 주가가 5일선 위로 올라가는 구간
+                if (prevPrice <= prevMA5 && currentPrice > currentMA5 && currentMA5) {
+                    buySignals.push(i);
+                }
+                
+                // 매도 신호: 주가가 5일선 아래로 떨어지는 구간  
+                if (prevPrice >= prevMA5 && currentPrice < currentMA5 && currentMA5) {
+                    sellSignals.push(i);
+                }
+            }
+
+            // 가격 기준 지지/저항 분석
+            const prices = recentData.map(d => d.price);
+            const minPrice = Math.min(...prices);
+            const maxPrice = Math.max(...prices);
+            const supportLevel = minPrice + (maxPrice - minPrice) * 0.2; // 하위 20% 구간
+            const resistanceLevel = minPrice + (maxPrice - minPrice) * 0.8; // 상위 20% 구간
+
+            // 추가 매수/매도 신호 (지지/저항 기준)
+            for (let i = 0; i < recentData.length; i++) {
+                const price = recentData[i].price;
+                // 지지선 근처에서 반등
+                if (price <= supportLevel * 1.02 && price >= supportLevel * 0.98) {
+                    if (!buySignals.includes(i)) buySignals.push(i);
+                }
+                // 저항선 근처에서 하락
+                if (price >= resistanceLevel * 0.98 && price <= resistanceLevel * 1.02) {
+                    if (!sellSignals.includes(i)) sellSignals.push(i);
+                }
+            }
+
+            // 결과 표시
+            document.getElementById('practiceSignals').style.display = 'flex';
+            
+            // 구체적인 신호 업데이트
+            const buyDays = buySignals.map(i => `${i + 21}일`).join(', ');
+            const sellDays = sellSignals.map(i => `${i + 21}일`).join(', ');
+            
+            document.getElementById('buySignal').textContent = 
+                buySignals.length > 0 ? `매수: ${buyDays}` : '매수 신호 없음';
+            document.getElementById('sellSignal').textContent = 
+                sellSignals.length > 0 ? `매도: ${sellDays}` : '매도 신호 없음';
+
+            // 분석 설명 업데이트
+            let analysisText = '<h3>분석 결과</h3><ul>';
+            
+            if (buySignals.length > 0) {
+                analysisText += `<li><strong>매수 신호:</strong> ${buyDays}에서 주가가 5일 이평선을 상향 돌파하거나 지지선 근처에서 반등</li>`;
+            }
+            
+            if (sellSignals.length > 0) {
+                analysisText += `<li><strong>매도 신호:</strong> ${sellDays}에서 주가가 5일 이평선을 하향 이탈하거나 저항선 근처에서 하락</li>`;
+            }
+            
+            analysisText += '<li><strong>분석 기준:</strong> 5일 이동평균선 돌파, 지지/저항선 근처 움직임</li>';
+            analysisText += '<li><strong>주의사항:</strong> 거래량과 함께 확인하여 신호의 신뢰도를 높이세요</li>';
+            analysisText += '</ul>';
+
+            document.getElementById('practiceExplanation').innerHTML = analysisText;
+
+            // 차트에 신호 표시 (차트 업데이트)
+            updatePracticeChartWithSignals(buySignals, sellSignals, recentData, recentMA5);
+        }
+
+        function updatePracticeChartWithSignals(buySignals, sellSignals, recentData, recentMA5) {
+            const ctx = document.getElementById('practiceChart').getContext('2d');
+            if (currentCharts.practice) currentCharts.practice.destroy();
+
+            // 매수/매도 신호 포인트 데이터 생성
+            const buyPoints = recentData.map((d, i) => buySignals.includes(i) ? d.price : null);
+            const sellPoints = recentData.map((d, i) => sellSignals.includes(i) ? d.price : null);
+
+            currentCharts.practice = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: recentData.map((d, index) => `${index + 21}일`),
+                    datasets: [{
+                        label: '주가',
+                        data: recentData.map(d => d.price),
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderWidth: 2,
+                        tension: 0.4
+                    }, {
+                        label: '5일 이평선',
+                        data: recentMA5,
+                        borderColor: '#f59e0b',
+                        borderDash: [4, 4],
+                        borderWidth: 2,
+                        fill: false,
+                        pointRadius: 0
+                    }, {
+                        label: '매수 신호',
+                        data: buyPoints,
+                        borderColor: '#22c55e',
+                        backgroundColor: '#22c55e',
+                        borderWidth: 0,
+                        pointRadius: 8,
+                        pointHoverRadius: 10,
+                        showLine: false,
+                        pointStyle: 'triangle'
+                    }, {
+                        label: '매도 신호',
+                        data: sellPoints,
+                        borderColor: '#ef4444',
+                        backgroundColor: '#ef4444',
+                        borderWidth: 0,
+                        pointRadius: 8,
+                        pointHoverRadius: 10,
+                        showLine: false,
+                        pointStyle: 'rectRot'
+                    }]
+                },
+                options: getCommonOptions()
+            });
+        }
+
+        // iframe 높이 자동 조절 함수
+        function adjustIframeHeight() {
+            const contentHeight = document.body.scrollHeight;
+            
+            // 부모 창에 높이 정보 전달 (PostMessage API)
+            if (window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'resize',
+                    height: contentHeight
+                }, '*');
+            }
+        }
+
+        // 페이지 로드 시 첫 번째 차트 그리기
+        window.addEventListener('load', function() {
+            drawStoryChart();
+            
+            // 초기 높이 조절
+            setTimeout(adjustIframeHeight, 500);
+            
+            // 탭 변경 시 높이 재조절
+            const originalShowTab = window.showTab;
+            window.showTab = function(tabName) {
+                originalShowTab(tabName);
+                setTimeout(adjustIframeHeight, 300);
+            };
+            
+            // 창 크기 변경 시 높이 재조절
+            window.addEventListener('resize', function() {
+                setTimeout(adjustIframeHeight, 100);
+            });
+        });
+    </script>
+</body>
+</html>
