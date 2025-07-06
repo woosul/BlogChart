@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 주식 차트 패턴으로 매수/매도 신호 찾기</title>
+    <link rel="stylesheet" href="../../common/css/chart-common.css">
+    <style>
+        .pattern-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .pattern-btn {
+            padding: 8px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 20px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .pattern-btn.active {
+            border-color: #3b82f6;
+            background: #eff6ff;
+            color: #1d4ed8;
+        }
+        
+        .signal-indicator {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        .signal-item {
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .signal-buy {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            color: #166534;
+            border: 2px solid #22c55e;
+        }
+        
+        .signal-sell {
+            background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
+            color: #991b1b;
+            border: 2px solid #ef4444;
+        }
+        
+        .signal-neutral {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            color: #475569;
+            border: 2px solid #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="chart-container">
+        <!-- 헤더 -->
+        <div class="chart-header">
+            <h1>📊 차트 패턴 분석</h1>
+            <p>30만원을 잃고 깨달은 주식 차트의 진실</p>
+        </div>
+
+        <!-- 네비게이션 -->
+        <div class="nav-bar">
+            <a href="../../" class="home-link">🏠 홈</a>
+            <a href="../">📈 주식 차트 목록</a>
+            <a href="../volume-price-correlation/">📊 거래량 분석</a>
+            <a href="../moving-average-signals/">📊 이동평균선</a>
+        </div>
+
+        <!-- 컨텐츠 -->
+        <div class="chart-content">
+            <!-- 탭 버튼 -->
+            <div class="tab-buttons">
+                <button class="tab-button active" onclick="showTab('story')">
+                    📖 내 실패 스토리
+                </button>
+                <button class="tab-button" onclick="showTab('basic')">
+                    📊 기본 패턴 분석
+                </button>
+                <button class="tab-button" onclick="showTab('advanced')">
+                    🎯 고급 패턴 인식
+                </button>
+                <button class="tab-button" onclick="showTab('practice')">
+                    💪 실전 연습
+                </button>
+            </div>
+
+            <!-- 스토리 탭 -->
+            <div id="tab-story" class="tab-content">
+                <div class="chart-area">
+                    <div class="chart-title">😭 실패한 투자 vs 😊 성공한 투자</div>
+                    <div class="chart-canvas-area">
+                        <canvas id="storyChart"></canvas>
+                    </div>
+                    
+                    <div class="signal-indicator">
+                        <div class="signal-item signal-sell">❌ 실패 포인트</div>
+                        <div class="signal-item signal-buy">✅ 성공 포인트</div>
+                    </div>
+                </div>
+                
+                <div class="story-box failure-box" id="storyExplanation">
+                    <h4>💭 그때 내 생각</h4>
+                    <p>차트의 점들에 마우스를 올려보면 각 시점의 제 생각을 확인할 수 있어요!</p>
+                </div>
+                
+                <div class="explanation">
+                    <h3>📚 실패에서 배운 핵심 교훈</h3>
+                    <ul>
+                        <li>이동평균선을 무시하고 감정적으로 투자했던 실수</li>
+                        <li>거래량 급증을 위험 신호로 인식하지 못했던 점</li>
+                        <li>손절 기준 없이 "좋은 회사니까 괜찮겠지" 했던 안일함</li>
+                        <li>차트 패턴을 체계적으로 공부한 후의 극적인 변화</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 기본 패턴 탭 -->
+            <div id="tab-basic" class="tab-content" style="display: none;">
+                <div class="chart-area">
+                    <div class="chart-title">📊 기본 차트 패턴 - 지지선과 저항선</div>
+                    
+                    <div class="pattern-selector">
+                        <button class="pattern-btn active" onclick="showPattern('support')">지지선 패턴</button>
+                        <button class="pattern-btn" onclick="showPattern('resistance')">저항선 패턴</button>
+                        <button class="pattern-btn" onclick="showPattern('breakout')">돌파 패턴</button>
+                        <button class="pattern-btn" onclick="showPattern('triangle')">삼각형 패턴</button>
+                    </div>
+                    
+                    <div class="chart-canvas-area">
+                        <canvas id="basicChart"></canvas>
+                    </div>
+                    
+                    <div class="volume-area">
+                        <canvas id="volumeChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="explanation" id="patternExplanation">
+                    <h3>🔍 지지선 패턴 분석</h3>
+                    <ul>
+                        <li>지지선: 주가가 여러 번 반등한 가격대 (매수 관심 구간)</li>
+                        <li>지지선 근처에서 거래량 증가와 함께 반등하면 강한 매수 신호</li>
+                        <li>지지선 이탈 시에는 추가 하락 가능성이 높음</li>
+                        <li>지지선은 한번 깨지면 저항선으로 역할이 바뀜</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 고급 패턴 탭 -->
+            <div id="tab-advanced" class="tab-content" style="display: none;">
+                <div class="chart-area">
+                    <div class="chart-title">🎯 고급 패턴 - 머리어깨형과 이중바닥</div>
+                    
+                    <div class="pattern-selector">
+                        <button class="pattern-btn active" onclick="showAdvancedPattern('headShoulders')">머리어깨형</button>
+                        <button class="pattern-btn" onclick="showAdvancedPattern('doubleBottom')">이중바닥</button>
+                        <button class="pattern-btn" onclick="showAdvancedPattern('cup')">컵앤핸들</button>
+                        <button class="pattern-btn" onclick="showAdvancedPattern('flag')">깃발형</button>
+                    </div>
+                    
+                    <div class="chart-canvas-area">
+                        <canvas id="advancedChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="explanation" id="advancedExplanation">
+                    <h3>🎯 머리어깨형 패턴</h3>
+                    <ul>
+                        <li>상승 추세의 마지막에 나타나는 반전 신호</li>
+                        <li>왼쪽 어깨 → 머리 → 오른쪽 어깨 순으로 형성</li>
+                        <li>넥라인 이탈 시 강한 하락 신호</li>
+                        <li>거래량은 머리 부분에서 감소하는 것이 특징</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 실전 연습 탭 -->
+            <div id="tab-practice" class="tab-content" style="display: none;">
+                <div class="chart-area">
+                    <div class="chart-title">💪 실전 연습 - 패턴을 찾아보세요!</div>
+                    
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <button class="btn btn-primary" onclick="generateRandomChart()">
+                            🎲 새로운 차트 생성
+                        </button>
+                        <button class="btn btn-secondary" onclick="revealAnswer()">
+                            💡 정답 확인
+                        </button>
+                    </div>
+                    
+                    <div class="chart-canvas-area">
+                        <canvas id="practiceChart"></canvas>
+                    </div>
+                    
+                    <div class="signal-indicator" id="practiceSignals" style="display: none;">
+                        <div class="signal-item signal-buy" id="buySignal">매수 구간</div>
+                        <div class="signal-item signal-sell" id="sellSignal">매도 구간</div>
+                    </div>
+                </div>
+                
+                <div class="explanation" id="practiceExplanation">
+                    <h3>💪 연습 문제</h3>
+                    <p>위 차트에서 매수와 매도 타이밍을 찾아보세요. 이동평균선, 거래량, 지지/저항선을 종합적으로 고려해보세요!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../../common/js/chart-utils.js"></script>
+    <script>
+        // 스토리 데이터
+        const storyData = {
+            failure: {
+                labels: ['매수 시점', '1주 후', '2주 후', '손절매'],
+                price: [68000, 66500, 64000, 61500],
+                volume: [15000000, 18000000, 22000000, 25000000],
+                ma20: [69500, 69000, 68200, 67000],
+                stories: [
+                    "김과장님이 삼성전자 좋다고 해서 68,000원에 매수. 이동평균선이 뭔지도 몰랐어요.",
+                    "어? 좀 떨어졌네... 그래도 삼성전자인데 괜찮겠지? 라고 생각했습니다.",
+                    "계속 떨어지는데... 뉴스를 찾아봐도 특별한 악재는 없었어요.",
+                    "더 이상 못 견디겠어서 61,500원에 손절매. 10만원 손실 😭"
+                ]
+            },
+            success: {
+                labels: ['관망', '신호 포착', '매수', '익절'],
+                price: [62000, 63800, 65500, 69500],
+                volume: [14000000, 16000000, 24000000, 32000000],
+                ma20: [63500, 63200, 63800, 66100],
+                stories: [
+                    "이번엔 이동평균선을 확인하고 신중하게 관망했어요.",
+                    "20일선 위로 올라오고 거래량도 늘어나네! 좋은 신호예요.",
+                    "확신을 가지고 65,500원에 매수! 이번엔 근거가 있습니다.",
+                    "목표가 도달해서 69,500원에 익절. 8만원 수익! 🎉"
+                ]
+            }
+        };
+
+        // 패턴 데이터
+        const patternData = {
+            support: {
+                price: [60000, 62000, 61000, 60500, 63000, 62500, 64000, 66000],
+                lines: { support: 60000 },
+                explanation: {
+                    title: "🔍 지지선 패턴 분석",
+                    points: [
+                        "지지선: 주가가 여러 번 반등한 가격대 (매수 관심 구간)",
+                        "지지선 근처에서 거래량 증가와 함께 반등하면 강한 매수 신호",
+                        "지지선 이탈 시에는 추가 하락 가능성이 높음",
+                        "지지선은 한번 깨지면 저항선으로 역할이 바뀜"
+                    ]
+                }
+            },
+            resistance: {
+                price: [58000, 60000, 62000, 64000, 63500, 64200, 63800, 62000],
+                lines: { resistance: 64000 },
+                explanation: {
+                    title: "🔍 저항선 패턴 분석", 
+                    points: [
+                        "저항선: 주가가 여러 번 하락한 가격대 (매도 관심 구간)",
+                        "저항선 근처에서는 매도 압력이 강해져 상승이 제한됨",
+                        "저항선 돌파 시 대량 거래량과 함께라면 강한 상승 신호",
+                        "돌파된 저항선은 이후 지지선 역할을 하게 됨"
+                    ]
+                }
+            },
+            breakout: {
+                price: [61000, 61500, 62000, 61800, 62200, 63500, 65000, 67000],
+                lines: { resistance: 62500 },
+                explanation: {
+                    title: "🚀 돌파 패턴 분석",
+                    points: [
+                        "저항선을 힘있게 돌파하면서 상승하는 패턴",
+                        "돌파 시점에 거래량이 크게 증가하는 것이 핵심",
+                        "돌파 후 다시 저항선(현재는 지지선) 위에서 지지받으면 확실한 신호",
+                        "가짜 돌파를 주의해야 함 - 거래량 없는 돌파는 위험"
+                    ]
+                }
+            },
+            triangle: {
+                price: [60000, 61000, 60500, 61200, 60800, 61100, 60900, 62500],
+                lines: { support: [60000, 60900], resistance: [61000, 61100] },
+                explanation: {
+                    title: "📐 삼각형 패턴 분석",
+                    points: [
+                        "상승하는 지지선과 하락하는 저항선이 만나는 패턴",
+                        "변동폭이 점차 줄어들면서 삼각형 모양을 형성",
+                        "끝 부분에서 어느 방향으로든 크게 움직일 가능성 높음",
+                        "돌파 방향과 거래량을 확인하여 매매 방향 결정"
+                    ]
+                }
+            }
+        };
+
+        let currentCharts = {};
+        let currentPattern = 'support';
+
+        // 스토리 차트 그리기
+        function drawStoryChart() {
+            const ctx = document.getElementById('storyChart').getContext('2d');
+            if (currentCharts.story) currentCharts.story.destroy();
+
+            currentCharts.story = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['시작', '1주차', '2주차', '3주차'],
+                    datasets: [{
+                        label: '😭 실패한 투자',
+                        data: storyData.failure.price,
+                        borderColor: ChartUtils.colors.danger,
+                        backgroundColor: ChartUtils.colors.danger + '20',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        pointBackgroundColor: ChartUtils.colors.danger,
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 3,
+                        pointRadius: 8
+                    }, {
+                        label: '😊 성공한 투자',
+                        data: storyData.success.price,
+                        borderColor: ChartUtils.colors.success,
+                        backgroundColor: ChartUtils.colors.success + '20',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        pointBackgroundColor: ChartUtils.colors.success,
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 3,
+                        pointRadius: 8
+                    }]
+                },
+                options: {
+                    ...ChartUtils.getResponsiveOptions(),
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: function(value) {
+                                    return ChartUtils.formatKRW(value);
+                                }
+                            }
+                        }
+                    },
+                    onHover: (event, elements) => {
+                        if (elements.length > 0) {
+                            const datasetIndex = elements[0].datasetIndex;
+                            const index = elements[0].index;
+                            const story = datasetIndex === 0 ? 
+                                storyData.failure.stories[index] : 
+                                storyData.success.stories[index];
+                            
+                            const boxClass = datasetIndex === 0 ? 'failure-box' : 'success-box';
+                            document.getElementById('storyExplanation').className = `story-box ${boxClass}`;
+                            document.getElementById('storyExplanation').innerHTML = `
+                                <h4>💭 ${datasetIndex === 0 ? '실패' : '성공'} 시점의 생각</h4>
+                                <p>${story}</p>
+                            `;
+                        }
+                    }
+                }
+            });
+        }
+
+        // 기본 패턴 차트 그리기
+        function drawBasicChart() {
+            const data = patternData[currentPattern];
+            const ctx = document.getElementById('basicChart').getContext('2d');
+            if (currentCharts.basic) currentCharts.basic.destroy();
+
+            const datasets = [{
+                label: '주가',
+                data: data.price,
+                borderColor: ChartUtils.colors.primary,
+                backgroundColor: ChartUtils.colors.primary + '20',
+                borderWidth: 3,
+                tension: 0.4
+            }];
+
+            // 지지선/저항선 추가
+            if (data.lines.support) {
+                datasets.push({
+                    label: '지지선',
+                    data: new Array(data.price.length).fill(data.lines.support),
+                    borderColor: ChartUtils.colors.success,
+                    borderDash: [10, 5],
+                    borderWidth: 2,
+                    fill: false,
+                    pointRadius: 0
+                });
+            }
+
+            if (data.lines.resistance) {
+                datasets.push({
+                    label: '저항선',
+                    data: new Array(data.price.length).fill(data.lines.resistance),
+                    borderColor: ChartUtils.colors.danger,
+                    borderDash: [10, 5],
+                    borderWidth: 2,
+                    fill: false,
+                    pointRadius: 0
+                });
+            }
+
+            currentCharts.basic = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['1주', '2주', '3주', '4주', '5주', '6주', '7주', '8주'],
+                    datasets: datasets
+                },
+                options: {
+                    ...ChartUtils.getResponsiveOptions(),
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: function(value) {
+                                    return ChartUtils.formatKRW(value);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 거래량 차트
+            const volumeCtx = document.getElementById('volumeChart').getContext('2d');
+            if (currentCharts.volume) currentCharts.volume.destroy();
+
+            currentCharts.volume = new Chart(volumeCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['1주', '2주', '3주', '4주', '5주', '6주', '7주', '8주'],
+                    datasets: [{
+                        label: '거래량',
+                        data: [15000000, 18000000, 22000000, 16000000, 20000000, 35000000, 28000000, 32000000],
+                        backgroundColor: ChartUtils.colors.secondary + '80',
+                        borderColor: ChartUtils.colors.secondary,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    ...ChartUtils.getResponsiveOptions(),
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: function(value) {
+                                    return ChartUtils.formatVolume(value);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 패턴 전환
+        function showPattern(patternName) {
+            currentPattern = patternName;
+            
+            // 버튼 상태 업데이트
+            document.querySelectorAll('.pattern-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // 차트 업데이트
+            drawBasicChart();
+            
+            // 설명 업데이트
+            const explanation = patternData[patternName].explanation;
+            document.getElementById('patternExplanation').innerHTML = `
+                <h3>${explanation.title}</h3>
+                <ul>
+                    ${explanation.points.map(point => `<li>${point}</li>`).join('')}
+                </ul>
+            `;
+        }
+
+        // 탭 전환 이벤트 리스너
+        window.addEventListener('tabChanged', function(e) {
+            const tabName = e.detail;
+            setTimeout(() => {
+                if (tabName === 'story') drawStoryChart();
+                if (tabName === 'basic') drawBasicChart();
+                if (tabName === 'advanced') drawAdvancedChart();
+                if (tabName === 'practice') drawPracticeChart();
+            }, 100);
+        });
+
+        // 고급 패턴 차트 (간단 구현)
+        function drawAdvancedChart() {
+            const ctx = document.getElementById('advancedChart').getContext('2d');
+            if (currentCharts.advanced) currentCharts.advanced.destroy();
+
+            currentCharts.advanced = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['1주', '2주', '3주', '4주', '5주', '6주', '7주', '8주', '9주'],
+                    datasets: [{
+                        label: '주가',
+                        data: [60000, 65000, 62000, 68000, 61000, 66000, 59000, 57000, 55000],
+                        borderColor: ChartUtils.colors.primary,
+                        backgroundColor: ChartUtils.colors.primary + '20',
+                        borderWidth: 3,
+                        tension: 0.4
+                    }]
+                },
+                options: ChartUtils.getResponsiveOptions()
+            });
+        }
+
+        // 실전 연습 차트
+        function drawPracticeChart() {
+            generateRandomChart();
+        }
+
+        function generateRandomChart() {
+            const data = ChartUtils.generateStockData(65000, 20);
+            const ctx = document.getElementById('practiceChart').getContext('2d');
+            if (currentCharts.practice) currentCharts.practice.destroy();
+
+            currentCharts.practice = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map(d => d.date),
+                    datasets: [{
+                        label: '주가',
+                        data: data.map(d => d.price),
+                        borderColor: ChartUtils.colors.primary,
+                        backgroundColor: ChartUtils.colors.primary + '20',
+                        borderWidth: 3,
+                        tension: 0.4
+                    }, {
+                        label: '20일 이평선',
+                        data: ChartUtils.calculateMovingAverage(data, 20),
+                        borderColor: ChartUtils.colors.warning,
+                        borderDash: [5, 5],
+                        borderWidth: 2,
+                        fill: false
+                    }]
+                },
+                options: ChartUtils.getResponsiveOptions()
+            });
+
+            // 정답 숨기기
+            document.getElementById('practiceSignals').style.display = 'none';
+        }
+
+        function revealAnswer() {
+            document.getElementById('practiceSignals').style.display = 'flex';
+        }
+
+        // 페이지 로드 시 첫 번째 차트 그리기
+        window.addEventListener('load', function() {
+            drawStoryChart();
+        });
+    </script>
+</body>
+</html>
