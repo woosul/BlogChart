@@ -1,9 +1,33 @@
-<!DOCTYPE html>
+let currentCharts = {};
+        let currentPattern = 'support';
+        let currentAdvancedPattern = 'headShoulders';
+        let practiceData = null;
+
+        // 고급 패턴 전환
+        function showAdvancedPattern(patternName) {
+            currentAdvancedPattern = patternName;
+            
+            // 버튼 상태 업데이트
+            document.querySelectorAll('.pattern-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // 차트 업데이트
+            drawAdvancedChart();
+            
+            // 설명 업데이트
+            const explanation = advancedPatternData[patternName].explanation;
+            document.getElementById('advancedExplanation').innerHTML = `
+                <h3>${explanation.title}</h3>
+                <ul>
+                    ${explanation.points.map(point => `<li>${point}</li>`).join('')}
+                </ul>
+            `;
+        }<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>주식차트패턴으로 매수/매도 신호찾기</title>
+    <title>주식 차트 패턴으로 매수/매도 신호 찾기</title>
     <style>
         * {
             margin: 0;
@@ -297,16 +321,16 @@
         <!-- 탭 버튼 -->
         <div class="tab-buttons">
             <button class="tab-button active" onclick="showTab('story')">
-                실패경험
+                실패 스토리
             </button>
             <button class="tab-button" onclick="showTab('basic')">
-                기본패턴
+                기본 패턴
             </button>
             <button class="tab-button" onclick="showTab('advanced')">
-                고급패턴
+                고급 패턴
             </button>
             <button class="tab-button" onclick="showTab('practice')">
-                실전연습
+                실전 연습
             </button>
         </div>
 
@@ -517,9 +541,92 @@
             }
         };
 
-        let currentCharts = {};
-        let currentPattern = 'support';
-        let practiceData = null;
+        // 고급 패턴 데이터
+        const advancedPatternData = {
+            headShoulders: {
+                price: [58000, 62000, 60000, 65000, 63000, 68000, 65000, 62000, 60000, 57000, 55000],
+                volume: [20000000, 25000000, 22000000, 35000000, 30000000, 40000000, 28000000, 32000000, 38000000, 45000000, 50000000],
+                points: {
+                    leftShoulder: { index: 1, label: "왼쪽 어깨" },
+                    head: { index: 5, label: "머리" },
+                    rightShoulder: { index: 7, label: "오른쪽 어깨" },
+                    neckline: { price: 60000, label: "넥라인" },
+                    breakout: { index: 9, label: "넥라인 이탈" }
+                },
+                explanation: {
+                    title: "머리어깨형 패턴",
+                    points: [
+                        "상승 추세의 마지막에 나타나는 강력한 하락 반전 신호",
+                        "왼쪽 어깨 → 머리 → 오른쪽 어깨 순으로 형성되며 각 고점이 낮아짐",
+                        "넥라인(두 저점을 연결한 선) 이탈 시 강한 하락 신호 확정",
+                        "거래량은 머리 부분에서 감소하고 넥라인 이탈 시 급증하는 것이 특징"
+                    ]
+                }
+            },
+            doubleBottom: {
+                price: [65000, 60000, 58000, 62000, 64000, 61000, 58000, 61000, 65000, 68000, 72000],
+                volume: [18000000, 25000000, 35000000, 22000000, 20000000, 28000000, 40000000, 30000000, 35000000, 45000000, 50000000],
+                points: {
+                    firstBottom: { index: 2, label: "첫 번째 바닥" },
+                    peak: { index: 4, label: "중간 고점" },
+                    secondBottom: { index: 6, label: "두 번째 바닥" },
+                    neckline: { price: 64000, label: "저항선" },
+                    breakout: { index: 9, label: "저항선 돌파" }
+                },
+                explanation: {
+                    title: "이중바닥 패턴",
+                    points: [
+                        "하락 추세의 마지막에 나타나는 강력한 상승 반전 신호",
+                        "비슷한 가격대에서 두 번의 저점을 형성하여 W자 모양 완성",
+                        "두 번째 바닥에서는 첫 번째보다 거래량이 적은 것이 일반적",
+                        "중간 고점을 연결한 저항선 돌파 시 상승 신호 확정"
+                    ]
+                }
+            },
+            cup: {
+                price: [60000, 58000, 56000, 55000, 57000, 59000, 61000, 62000, 61000, 60000, 61500, 64000],
+                volume: [25000000, 22000000, 20000000, 18000000, 20000000, 22000000, 25000000, 28000000, 20000000, 18000000, 35000000, 45000000],
+                points: {
+                    cupStart: { index: 0, label: "컵 시작" },
+                    cupBottom: { index: 3, label: "컵 바닥" },
+                    cupEnd: { index: 7, label: "컵 완성" },
+                    handleStart: { index: 7, label: "핸들 시작" },
+                    handleEnd: { index: 9, label: "핸들 끝" },
+                    breakout: { index: 11, label: "돌파" }
+                },
+                explanation: {
+                    title: "컵앤핸들 패턴",
+                    points: [
+                        "상승 중 일시 조정 후 재상승하는 지속 패턴",
+                        "컵 모양의 둥근 바닥과 작은 핸들(깃발) 형태로 구성",
+                        "컵 형성 기간은 7주~65주, 핸들은 1주~4주가 일반적",
+                        "핸들 끝에서 거래량 증가와 함께 돌파 시 강한 상승 신호"
+                    ]
+                }
+            },
+            flag: {
+                price: [55000, 60000, 65000, 70000, 68000, 69000, 67000, 68000, 66000, 67000, 72000, 75000],
+                volume: [30000000, 35000000, 40000000, 50000000, 25000000, 20000000, 18000000, 22000000, 20000000, 25000000, 45000000, 55000000],
+                points: {
+                    poleStart: { index: 0, label: "깃대 시작" },
+                    poleEnd: { index: 3, label: "깃대 끝" },
+                    flagStart: { index: 3, label: "깃발 시작" },
+                    flagEnd: { index: 9, label: "깃발 끝" },
+                    breakout: { index: 10, label: "깃발 돌파" }
+                },
+                explanation: {
+                    title: "깃발형 패턴",
+                    points: [
+                        "급격한 상승(깃대) 후 작은 하향 조정(깃발)이 나타나는 지속 패턴",
+                        "깃발 구간에서는 거래량이 현저히 감소하는 것이 특징",
+                        "깃발 기간은 보통 1~3주 정도로 짧은 편",
+                        "깃발 상단 돌파 시 깃대 길이만큼 추가 상승 기대"
+                    ]
+                }
+            }
+        };
+
+        let currentAdvancedPattern = 'headShoulders';
 
         // 공통 차트 옵션
         function getCommonOptions() {
@@ -577,11 +684,21 @@
             document.getElementById('tab-' + tabName).style.display = 'block';
             event.target.classList.add('active');
             
-            // 차트 그리기
+            // 탭 그리기
             setTimeout(() => {
                 if (tabName === 'story') drawStoryChart();
                 if (tabName === 'basic') drawBasicChart();
-                if (tabName === 'advanced') drawAdvancedChart();
+                if (tabName === 'advanced') {
+                    drawAdvancedChart();
+                    // 고급 패턴 설명도 업데이트
+                    const explanation = advancedPatternData[currentAdvancedPattern].explanation;
+                    document.getElementById('advancedExplanation').innerHTML = `
+                        <h3>${explanation.title}</h3>
+                        <ul>
+                            ${explanation.points.map(point => `<li>${point}</li>`).join('')}
+                        </ul>
+                    `;
+                }
                 if (tabName === 'practice') drawPracticeChart();
             }, 100);
         }
@@ -748,23 +865,186 @@
 
         // 고급 패턴 차트
         function drawAdvancedChart() {
+            const data = advancedPatternData[currentAdvancedPattern];
             const ctx = document.getElementById('advancedChart').getContext('2d');
             if (currentCharts.advanced) currentCharts.advanced.destroy();
+
+            // 기본 데이터셋
+            const datasets = [{
+                label: '주가',
+                data: data.price,
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                borderWidth: 2,
+                tension: 0.4
+            }];
+
+            // 패턴별 특수 라인 추가
+            if (currentAdvancedPattern === 'headShoulders' || currentAdvancedPattern === 'doubleBottom') {
+                // 넥라인/저항선 추가
+                const linePrice = data.points.neckline.price;
+                datasets.push({
+                    label: data.points.neckline.label,
+                    data: new Array(data.price.length).fill(linePrice),
+                    borderColor: '#ef4444',
+                    borderDash: [8, 4],
+                    borderWidth: 2,
+                    fill: false,
+                    pointRadius: 0
+                });
+            }
+
+            // 패턴별 특수 표시 추가
+            if (currentAdvancedPattern === 'headShoulders') {
+                // 머리어깨형 - 어깨와 머리 강조
+                const shoulderHeadData = data.price.map((price, index) => {
+                    if (index === data.points.leftShoulder.index || 
+                        index === data.points.head.index || 
+                        index === data.points.rightShoulder.index) {
+                        return price;
+                    }
+                    return null;
+                });
+                
+                datasets.push({
+                    label: '어깨와 머리',
+                    data: shoulderHeadData,
+                    borderColor: '#22c55e',
+                    backgroundColor: '#22c55e',
+                    borderWidth: 0,
+                    pointRadius: 10,
+                    pointHoverRadius: 12,
+                    showLine: false,
+                    pointStyle: 'triangle'
+                });
+            }
+            
+            if (currentAdvancedPattern === 'doubleBottom') {
+                // 이중바닥 - 두 바닥 강조
+                const bottomData = data.price.map((price, index) => {
+                    if (index === data.points.firstBottom.index || 
+                        index === data.points.secondBottom.index) {
+                        return price;
+                    }
+                    return null;
+                });
+                
+                datasets.push({
+                    label: '이중 바닥',
+                    data: bottomData,
+                    borderColor: '#22c55e',
+                    backgroundColor: '#22c55e',
+                    borderWidth: 0,
+                    pointRadius: 10,
+                    pointHoverRadius: 12,
+                    showLine: false,
+                    pointStyle: 'rect'
+                });
+            }
+            
+            if (currentAdvancedPattern === 'cup') {
+                // 컵앤핸들 - 핸들 구간 강조
+                const handleData = data.price.map((price, index) => {
+                    if (index >= data.points.handleStart.index && 
+                        index <= data.points.handleEnd.index) {
+                        return price;
+                    }
+                    return null;
+                });
+                
+                datasets.push({
+                    label: '핸들 구간',
+                    data: handleData,
+                    borderColor: '#8b5cf6',
+                    backgroundColor: 'rgba(139, 92, 246, 0.3)',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 0
+                });
+            }
+            
+            if (currentAdvancedPattern === 'flag') {
+                // 깃발형 - 깃대와 깃발 구분
+                const poleData = data.price.map((price, index) => {
+                    if (index <= data.points.poleEnd.index) {
+                        return price;
+                    }
+                    return null;
+                });
+                
+                const flagData = data.price.map((price, index) => {
+                    if (index >= data.points.flagStart.index && 
+                        index <= data.points.flagEnd.index) {
+                        return price;
+                    }
+                    return null;
+                });
+                
+                datasets.push({
+                    label: '깃대 (급상승)',
+                    data: poleData,
+                    borderColor: '#22c55e',
+                    backgroundColor: 'rgba(34, 197, 94, 0.3)',
+                    borderWidth: 4,
+                    tension: 0.4,
+                    pointRadius: 0
+                });
+                
+                datasets.push({
+                    label: '깃발 (조정)',
+                    data: flagData,
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245, 158, 11, 0.3)',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    pointRadius: 0
+                });
+            }
+
+            // 거래량 정보를 위한 라벨 생성
+            const labels = data.price.map((_, index) => `${index + 1}주`);
 
             currentCharts.advanced = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: ['1주', '2주', '3주', '4주', '5주', '6주', '7주', '8주', '9주'],
-                    datasets: [{
-                        label: '주가',
-                        data: [60000, 65000, 62000, 68000, 61000, 66000, 59000, 57000, 55000],
-                        borderColor: '#3b82f6',
-                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                        borderWidth: 2,
-                        tension: 0.4
-                    }]
+                    labels: labels,
+                    datasets: datasets
                 },
-                options: getCommonOptions()
+                options: {
+                    ...getCommonOptions(),
+                    plugins: {
+                        ...getCommonOptions().plugins,
+                        tooltip: {
+                            ...getCommonOptions().plugins.tooltip,
+                            callbacks: {
+                                afterBody: function(context) {
+                                    const index = context[0].dataIndex;
+                                    const point = Object.values(data.points).find(p => p.index === index);
+                                    if (point) {
+                                        return [`📍 ${point.label}`];
+                                    }
+                                    
+                                    // 패턴별 추가 정보
+                                    if (currentAdvancedPattern === 'headShoulders' && index === data.points.breakout?.index) {
+                                        return ['💥 강한 하락 신호!'];
+                                    }
+                                    if (currentAdvancedPattern === 'doubleBottom' && index === data.points.breakout?.index) {
+                                        return ['🚀 강한 상승 신호!'];
+                                    }
+                                    if (currentAdvancedPattern === 'cup' && index === data.points.breakout?.index) {
+                                        return ['🎯 목표가 달성 예상!'];
+                                    }
+                                    if (currentAdvancedPattern === 'flag' && index === data.points.breakout?.index) {
+                                        return ['⬆️ 추가 상승 기대!'];
+                                    }
+                                    
+                                    return [];
+                                }
+                            }
+                        }
+                    }
+                }
             });
         }
 
@@ -986,6 +1266,34 @@
         // 페이지 로드 시 첫 번째 차트 그리기
         window.addEventListener('load', function() {
             drawStoryChart();
+            
+            // iframe 높이 자동 조절 함수
+            function adjustIframeHeight() {
+                const contentHeight = document.body.scrollHeight;
+                
+                // 부모 창에 높이 정보 전달 (PostMessage API)
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'resize',
+                        height: contentHeight
+                    }, '*');
+                }
+            }
+            
+            // 초기 높이 조절
+            setTimeout(adjustIframeHeight, 500);
+            
+            // 탭 변경 시 높이 재조절
+            const originalShowTab = window.showTab;
+            window.showTab = function(tabName) {
+                originalShowTab(tabName);
+                setTimeout(adjustIframeHeight, 300);
+            };
+            
+            // 창 크기 변경 시 높이 재조절
+            window.addEventListener('resize', function() {
+                setTimeout(adjustIframeHeight, 100);
+            });
         });
     </script>
 </body>
