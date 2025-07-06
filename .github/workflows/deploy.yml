@@ -17,32 +17,31 @@ jobs:
       with:
         node-version: '18'
         
-    - name: Install dependencies for volume-price-analyzer
+    - name: Install and build volume-price-analyzer
       run: |
         cd stock/volume-price-analyzer
         npm ci
-        
-    - name: Build volume-price-analyzer
-      run: |
-        cd stock/volume-price-analyzer
         npm run build
+        echo "Build completed, listing files:"
+        ls -la build/
         
-    - name: Prepare deployment directory
+    - name: Prepare deployment
       run: |
-        mkdir -p deploy
-        # Copy main page files
-        cp index.html deploy/
-        if [ -d "common" ]; then
-          cp -r common deploy/
-        fi
+        # Copy main site files
+        cp index.html deploy_temp.html
+        cp -r common . 2>/dev/null || echo "No common directory"
         
-        # Create stock directory structure and copy volume-price-analyzer
-        mkdir -p deploy/stock/volume-price-analyzer
-        cp -r stock/volume-price-analyzer/build/* deploy/stock/volume-price-analyzer/
+        # Copy React app to subdirectory
+        mkdir -p stock/volume-price-analyzer
+        cp -r stock/volume-price-analyzer/build/* stock/volume-price-analyzer/
+        
+        # Verify structure
+        echo "Final structure:"
+        find . -name "index.html" -type f
         
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./deploy
+        publish_dir: .
         force_orphan: true
