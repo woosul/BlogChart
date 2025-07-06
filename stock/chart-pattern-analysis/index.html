@@ -4,39 +4,108 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>주식 차트 패턴으로 매수/매도 신호 찾기</title>
-    <link rel="stylesheet" href="../../common/css/chart-common.css">
     <style>
-        body {
+        * {
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
             background: #f8fafc;
+            padding: 15px;
         }
         
         .chart-wrapper {
-            max-width: 1200px;
-            margin: 0 auto;
+            max-width: 100%;
             background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .tab-button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            background: #f1f5f9;
+            color: #64748b;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            font-family: inherit;
+        }
+        
+        .tab-button.active {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(59, 130, 246, 0.4);
+        }
+        
+        .tab-button:hover:not(.active) {
+            background: #e2e8f0;
+        }
+        
+        .chart-area {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .chart-canvas-area {
+            height: 280px;
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 15px;
+        }
+        
+        .volume-area {
+            height: 150px;
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
         
         .pattern-selector {
             display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 15px;
             justify-content: center;
+            flex-wrap: wrap;
         }
         
         .pattern-btn {
-            padding: 8px 16px;
+            padding: 6px 12px;
             border: 2px solid #e2e8f0;
-            border-radius: 20px;
+            border-radius: 15px;
             background: white;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-size: 0.9rem;
+            font-size: 11px;
         }
         
         .pattern-btn.active {
@@ -47,16 +116,17 @@
         
         .signal-indicator {
             display: flex;
-            gap: 15px;
+            gap: 10px;
             justify-content: center;
-            margin: 20px 0;
+            margin: 15px 0;
+            flex-wrap: wrap;
         }
         
         .signal-item {
-            padding: 10px 20px;
-            border-radius: 25px;
+            padding: 6px 12px;
+            border-radius: 15px;
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 11px;
         }
         
         .signal-buy {
@@ -71,10 +141,150 @@
             border: 2px solid #ef4444;
         }
         
-        .signal-neutral {
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            color: #475569;
-            border: 2px solid #94a3b8;
+        .explanation {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-radius: 10px;
+            padding: 15px;
+            border-left: 4px solid #0ea5e9;
+            margin: 15px 0;
+        }
+        
+        .explanation h3 {
+            color: #0c4a6e;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .explanation p {
+            color: #0e7490;
+            line-height: 1.5;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        
+        .explanation ul {
+            list-style: none;
+            margin-top: 10px;
+        }
+        
+        .explanation li {
+            margin: 6px 0;
+            padding-left: 15px;
+            position: relative;
+            color: #0e7490;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        
+        .explanation li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #0ea5e9;
+            font-weight: bold;
+        }
+        
+        .story-box {
+            background: linear-gradient(135deg, #fef7cd 0%, #fef3c7 100%);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid #f59e0b;
+        }
+        
+        .story-box h4 {
+            color: #92400e;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .story-box p {
+            color: #a16207;
+            line-height: 1.4;
+            font-size: 13px;
+        }
+        
+        .success-box {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border-left-color: #22c55e;
+        }
+        
+        .success-box h4 {
+            color: #166534;
+        }
+        
+        .success-box p {
+            color: #15803d;
+        }
+        
+        .failure-box {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border-left-color: #ef4444;
+        }
+        
+        .failure-box h4 {
+            color: #991b1b;
+        }
+        
+        .failure-box p {
+            color: #dc2626;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            text-decoration: none;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            font-size: 12px;
+            margin: 3px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(59, 130, 246, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+        
+        .btn-secondary:hover {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+        
+        @media (max-width: 480px) {
+            .tab-button {
+                font-size: 11px;
+                padding: 6px 12px;
+            }
+            
+            .pattern-btn {
+                font-size: 10px;
+                padding: 5px 10px;
+            }
+            
+            .chart-canvas-area {
+                height: 250px;
+                padding: 10px;
+            }
+            
+            .volume-area {
+                height: 120px;
+                padding: 10px;
+            }
         }
     </style>
 </head>
@@ -83,13 +293,13 @@
         <!-- 탭 버튼 -->
         <div class="tab-buttons">
             <button class="tab-button active" onclick="showTab('story')">
-                내 실패 스토리
+                실패 스토리
             </button>
             <button class="tab-button" onclick="showTab('basic')">
-                기본 패턴 분석
+                기본 패턴
             </button>
             <button class="tab-button" onclick="showTab('advanced')">
-                고급 패턴 인식
+                고급 패턴
             </button>
             <button class="tab-button" onclick="showTab('practice')">
                 실전 연습
@@ -120,8 +330,8 @@
                 <ul>
                     <li>이동평균선을 무시하고 감정적으로 투자했던 실수</li>
                     <li>거래량 급증을 위험 신호로 인식하지 못했던 점</li>
-                    <li>손절 기준 없이 "좋은 회사니까 괜찮겠지" 했던 안일함</li>
-                    <li>차트 패턴을 체계적으로 공부한 후의 극적인 변화</li>
+                    <li>손절 기준 없이 막연한 기대에 의존했던 문제</li>
+                    <li>차트 패턴을 체계적으로 공부한 후의 변화</li>
                 </ul>
             </div>
         </div>
@@ -132,10 +342,10 @@
                 <div class="chart-title">기본 차트 패턴 - 지지선과 저항선</div>
                 
                 <div class="pattern-selector">
-                    <button class="pattern-btn active" onclick="showPattern('support')">지지선 패턴</button>
-                    <button class="pattern-btn" onclick="showPattern('resistance')">저항선 패턴</button>
-                    <button class="pattern-btn" onclick="showPattern('breakout')">돌파 패턴</button>
-                    <button class="pattern-btn" onclick="showPattern('triangle')">삼각형 패턴</button>
+                    <button class="pattern-btn active" onclick="showPattern('support')">지지선</button>
+                    <button class="pattern-btn" onclick="showPattern('resistance')">저항선</button>
+                    <button class="pattern-btn" onclick="showPattern('breakout')">돌파</button>
+                    <button class="pattern-btn" onclick="showPattern('triangle')">삼각형</button>
                 </div>
                 
                 <div class="chart-canvas-area">
@@ -191,7 +401,7 @@
             <div class="chart-area">
                 <div class="chart-title">실전 연습 - 패턴을 찾아보세요!</div>
                 
-                <div style="text-align: center; margin-bottom: 20px;">
+                <div style="text-align: center; margin-bottom: 15px;">
                     <button class="btn btn-primary" onclick="generateRandomChart()">
                         새로운 차트 생성
                     </button>
@@ -218,7 +428,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="../../common/js/chart-utils.js"></script>
     <script>
         // 스토리 데이터
         const storyData = {
@@ -241,7 +450,7 @@
                 ma20: [63500, 63200, 63800, 66100],
                 stories: [
                     "이번엔 이동평균선을 확인하고 신중하게 관망했어요.",
-                    "20일선 위로 올라오고 거래량도 늘어나네! 좋은 신호예요.",
+                    "5일선 위로 올라오고 거래량도 늘어나네! 좋은 신호예요.",
                     "확신을 가지고 65,500원에 매수! 이번엔 근거가 있습니다.",
                     "목표가 도달해서 69,500원에 익절. 8만원 수익!"
                 ]
@@ -308,6 +517,71 @@
         let currentPattern = 'support';
         let practiceData = null;
 
+        // 공통 차트 옵션
+        function getCommonOptions() {
+            return {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 15,
+                            font: {
+                                size: 11,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            font: {
+                                size: 10
+                            }
+                        }
+                    },
+                    y: {
+                        ticks: {
+                            font: {
+                                size: 10
+                            },
+                            callback: function(value) {
+                                return value.toLocaleString() + '원';
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        // 탭 전환 함수
+        function showTab(tabName) {
+            // 모든 탭 숨기기
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
+            
+            // 모든 버튼 비활성화
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 선택된 탭 보이기
+            document.getElementById('tab-' + tabName).style.display = 'block';
+            event.target.classList.add('active');
+            
+            // 차트 그리기
+            setTimeout(() => {
+                if (tabName === 'story') drawStoryChart();
+                if (tabName === 'basic') drawBasicChart();
+                if (tabName === 'advanced') drawAdvancedChart();
+                if (tabName === 'practice') drawPracticeChart();
+            }, 100);
+        }
+
         // 스토리 차트 그리기
         function drawStoryChart() {
             const ctx = document.getElementById('storyChart').getContext('2d');
@@ -322,50 +596,27 @@
                         data: storyData.failure.price,
                         borderColor: '#ef4444',
                         backgroundColor: 'rgba(239, 68, 68, 0.2)',
-                        borderWidth: 3,
+                        borderWidth: 2,
                         tension: 0.4,
                         pointBackgroundColor: '#ef4444',
                         pointBorderColor: '#fff',
-                        pointBorderWidth: 3,
-                        pointRadius: 8
+                        pointBorderWidth: 2,
+                        pointRadius: 6
                     }, {
                         label: '성공한 투자',
                         data: storyData.success.price,
                         borderColor: '#22c55e',
                         backgroundColor: 'rgba(34, 197, 94, 0.2)',
-                        borderWidth: 3,
+                        borderWidth: 2,
                         tension: 0.4,
                         pointBackgroundColor: '#22c55e',
                         pointBorderColor: '#fff',
-                        pointBorderWidth: 3,
-                        pointRadius: 8
+                        pointBorderWidth: 2,
+                        pointRadius: 6
                     }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                            labels: {
-                                usePointStyle: true,
-                                padding: 20,
-                                font: {
-                                    size: 14,
-                                    weight: 'bold'
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            ticks: {
-                                callback: function(value) {
-                                    return value.toLocaleString() + '원';
-                                }
-                            }
-                        }
-                    },
+                    ...getCommonOptions(),
                     onHover: (event, elements) => {
                         if (elements.length > 0) {
                             const datasetIndex = elements[0].datasetIndex;
@@ -397,7 +648,7 @@
                 data: data.price,
                 borderColor: '#3b82f6',
                 backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                borderWidth: 3,
+                borderWidth: 2,
                 tension: 0.4
             }];
 
@@ -407,7 +658,7 @@
                     label: '지지선',
                     data: new Array(data.price.length).fill(data.lines.support),
                     borderColor: '#22c55e',
-                    borderDash: [10, 5],
+                    borderDash: [8, 4],
                     borderWidth: 2,
                     fill: false,
                     pointRadius: 0
@@ -419,7 +670,7 @@
                     label: '저항선',
                     data: new Array(data.price.length).fill(data.lines.resistance),
                     borderColor: '#ef4444',
-                    borderDash: [10, 5],
+                    borderDash: [8, 4],
                     borderWidth: 2,
                     fill: false,
                     pointRadius: 0
@@ -432,19 +683,7 @@
                     labels: ['1주', '2주', '3주', '4주', '5주', '6주', '7주', '8주'],
                     datasets: datasets
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            ticks: {
-                                callback: function(value) {
-                                    return value.toLocaleString() + '원';
-                                }
-                            }
-                        }
-                    }
-                }
+                options: getCommonOptions()
             });
 
             // 거래량 차트
@@ -464,11 +703,14 @@
                     }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
+                    ...getCommonOptions(),
                     scales: {
+                        ...getCommonOptions().scales,
                         y: {
                             ticks: {
+                                font: {
+                                    size: 10
+                                },
                                 callback: function(value) {
                                     return (value / 1000000).toFixed(0) + 'M';
                                 }
@@ -514,23 +756,11 @@
                         data: [60000, 65000, 62000, 68000, 61000, 66000, 59000, 57000, 55000],
                         borderColor: '#3b82f6',
                         backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                        borderWidth: 3,
+                        borderWidth: 2,
                         tension: 0.4
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            ticks: {
-                                callback: function(value) {
-                                    return value.toLocaleString() + '원';
-                                }
-                            }
-                        }
-                    }
-                }
+                options: getCommonOptions()
             });
         }
 
@@ -540,11 +770,11 @@
         }
 
         function generateRandomChart() {
-            // 실제 주가 데이터 생성
+            // 40일치 데이터 생성 (5일 이평선이 보이도록)
             practiceData = [];
             let price = 65000;
             
-            for (let i = 0; i < 20; i++) {
+            for (let i = 0; i < 40; i++) {
                 const change = (Math.random() - 0.5) * 0.06; // ±3% 변동
                 price = price * (1 + change);
                 const volume = Math.floor(Math.random() * 30000000) + 15000000;
@@ -556,16 +786,20 @@
                 });
             }
 
-            // 20일 이동평균선 계산
-            const ma20Data = [];
+            // 5일 이동평균선 계산 (더 짧은 기간으로 변경)
+            const ma5Data = [];
             for (let i = 0; i < practiceData.length; i++) {
-                if (i < 19) {
-                    ma20Data.push(null);
+                if (i < 4) {
+                    ma5Data.push(null);
                 } else {
-                    const sum = practiceData.slice(i - 19, i + 1).reduce((acc, item) => acc + item.price, 0);
-                    ma20Data.push(Math.round(sum / 20));
+                    const sum = practiceData.slice(i - 4, i + 1).reduce((acc, item) => acc + item.price, 0);
+                    ma5Data.push(Math.round(sum / 5));
                 }
             }
+
+            // 최근 20일만 표시 (차트가 너무 복잡하지 않도록)
+            const recentData = practiceData.slice(-20);
+            const recentMA5 = ma5Data.slice(-20);
 
             const ctx = document.getElementById('practiceChart').getContext('2d');
             if (currentCharts.practice) currentCharts.practice.destroy();
@@ -573,37 +807,25 @@
             currentCharts.practice = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: practiceData.map(d => d.date),
+                    labels: recentData.map((d, index) => `${index + 21}일`),
                     datasets: [{
                         label: '주가',
-                        data: practiceData.map(d => d.price),
+                        data: recentData.map(d => d.price),
                         borderColor: '#3b82f6',
                         backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                        borderWidth: 3,
+                        borderWidth: 2,
                         tension: 0.4
                     }, {
-                        label: '20일 이평선',
-                        data: ma20Data,
+                        label: '5일 이평선',
+                        data: recentMA5,
                         borderColor: '#f59e0b',
-                        borderDash: [5, 5],
+                        borderDash: [4, 4],
                         borderWidth: 2,
                         fill: false,
                         pointRadius: 0
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            ticks: {
-                                callback: function(value) {
-                                    return value.toLocaleString() + '원';
-                                }
-                            }
-                        }
-                    }
-                }
+                options: getCommonOptions()
             });
 
             // 정답 숨기기
@@ -613,17 +835,6 @@
         function revealAnswer() {
             document.getElementById('practiceSignals').style.display = 'flex';
         }
-
-        // 탭 전환 이벤트 리스너
-        window.addEventListener('tabChanged', function(e) {
-            const tabName = e.detail;
-            setTimeout(() => {
-                if (tabName === 'story') drawStoryChart();
-                if (tabName === 'basic') drawBasicChart();
-                if (tabName === 'advanced') drawAdvancedChart();
-                if (tabName === 'practice') drawPracticeChart();
-            }, 100);
-        });
 
         // 페이지 로드 시 첫 번째 차트 그리기
         window.addEventListener('load', function() {
