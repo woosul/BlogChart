@@ -3,8 +3,6 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
 
 jobs:
   deploy:
@@ -18,8 +16,6 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: 'stock/volume-price-analyzer/package-lock.json'
         
     - name: Install dependencies for volume-price-analyzer
       run: |
@@ -30,29 +26,22 @@ jobs:
       run: |
         cd stock/volume-price-analyzer
         npm run build
-        echo "=== Build completed ==="
-        ls -la build/
-        echo "=== index.html content preview ==="
-        head -1 build/index.html
         
     - name: Prepare deployment directory
       run: |
         mkdir -p deploy
         # Copy main page files
         cp index.html deploy/
-        cp -r common deploy/ || echo "common directory not found, skipping"
+        if [ -d "common" ]; then
+          cp -r common deploy/
+        fi
         
         # Create stock directory structure and copy volume-price-analyzer
         mkdir -p deploy/stock/volume-price-analyzer
         cp -r stock/volume-price-analyzer/build/* deploy/stock/volume-price-analyzer/
         
-        # Verify deployment structure
-        echo "=== Deployment structure ==="
-        find deploy -type f -name "*.html" -o -name "*.js" -o -name "*.css" | head -20
-        
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
-      if: github.ref == 'refs/heads/master'
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./deploy
