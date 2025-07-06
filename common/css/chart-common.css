@@ -178,9 +178,11 @@ body {
 }
 
 .explanation li:before {
-    content: "💡";
+    content: "•";
     position: absolute;
     left: 0;
+    color: #0ea5e9;
+    font-weight: bold;
 }
 
 /* 스토리 박스 */

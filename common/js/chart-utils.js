@@ -247,7 +247,7 @@ const ErrorHandler = {
         if (container) {
             container.innerHTML = `
                 <div style="text-align: center; padding: 40px; color: #ef4444;">
-                    <div style="font-size: 3rem; margin-bottom: 15px;">⚠️</div>
+                    <div style="font-size: 3rem; margin-bottom: 15px;">⚠</div>
                     <h4>차트를 불러올 수 없습니다</h4>
                     <p style="margin-top: 10px; color: #6b7280;">${message}</p>
                 </div>
