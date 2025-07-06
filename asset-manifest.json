@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/BlogChart/static/css/main.f855e6bc.css",
-    "main.js": "/BlogChart/static/js/main.8eb5499b.js",
-    "static/js/453.12592822.chunk.js": "/BlogChart/static/js/453.12592822.chunk.js",
-    "index.html": "/BlogChart/index.html",
-    "main.f855e6bc.css.map": "/BlogChart/static/css/main.f855e6bc.css.map",
-    "main.8eb5499b.js.map": "/BlogChart/static/js/main.8eb5499b.js.map",
-    "453.12592822.chunk.js.map": "/BlogChart/static/js/453.12592822.chunk.js.map"
+    "main.css": "/BlogChart/stock/volume-price-analyzer/static/css/main.f855e6bc.css",
+    "main.js": "/BlogChart/stock/volume-price-analyzer/static/js/main.2dac14b8.js",
+    "static/js/453.12592822.chunk.js": "/BlogChart/stock/volume-price-analyzer/static/js/453.12592822.chunk.js",
+    "index.html": "/BlogChart/stock/volume-price-analyzer/index.html",
+    "main.f855e6bc.css.map": "/BlogChart/stock/volume-price-analyzer/static/css/main.f855e6bc.css.map",
+    "main.2dac14b8.js.map": "/BlogChart/stock/volume-price-analyzer/static/js/main.2dac14b8.js.map",
+    "453.12592822.chunk.js.map": "/BlogChart/stock/volume-price-analyzer/static/js/453.12592822.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.f855e6bc.css",
-    "static/js/main.8eb5499b.js"
+    "static/js/main.2dac14b8.js"
   ]
 }
