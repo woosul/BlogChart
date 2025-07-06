@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/stock/volume-price-analyzer/static/css/main.f855e6bc.css",
+    "main.js": "/stock/volume-price-analyzer/static/js/main.4d546c08.js",
+    "static/js/453.12592822.chunk.js": "/stock/volume-price-analyzer/static/js/453.12592822.chunk.js",
+    "index.html": "/stock/volume-price-analyzer/index.html",
+    "main.f855e6bc.css.map": "/stock/volume-price-analyzer/static/css/main.f855e6bc.css.map",
+    "main.4d546c08.js.map": "/stock/volume-price-analyzer/static/js/main.4d546c08.js.map",
+    "453.12592822.chunk.js.map": "/stock/volume-price-analyzer/static/js/453.12592822.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.f855e6bc.css",
+    "static/js/main.4d546c08.js"
+  ]
+}
