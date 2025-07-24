@@ -68,9 +68,16 @@ body {
 
 .radar-chart-container .chart-wrapper {
     height: 500px;
+    max-width: 500px;
+    margin: 0 auto;
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.radar-chart-container .chart-wrapper canvas {
+    max-width: 100% !important;
+    max-height: 100% !important;
 }
 
 /* Financial Health Cards */
