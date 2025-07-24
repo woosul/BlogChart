@@ -209,10 +209,18 @@ const radarChartOptions = {
     },
     layout: {
         padding: {
-            top: 20,
-            bottom: 20,
-            left: 20,
-            right: 20
+            top: 40,
+            bottom: 40,
+            left: 40,
+            right: 40
+        }
+    },
+    elements: {
+        line: {
+            borderWidth: 2
+        },
+        point: {
+            radius: 4
         }
     }
 };
