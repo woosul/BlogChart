@@ -58,7 +58,19 @@ body {
 }
 
 #radarChart {
-    height: 400px !important;
+    height: 500px !important;
+    margin-bottom: 24px !important;
+}
+
+.radar-chart-container {
+    padding-bottom: 60px !important;
+}
+
+.radar-chart-container .chart-wrapper {
+    height: 500px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Financial Health Cards */

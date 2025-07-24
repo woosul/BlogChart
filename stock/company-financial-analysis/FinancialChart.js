@@ -161,13 +161,14 @@ const lineChartOptions = {
 
 const radarChartOptions = {
     responsive: true,
-    maintainAspectRatio: false,
+    maintainAspectRatio: true,
+    aspectRatio: 1,
     plugins: {
         legend: {
-            position: 'top',
+            position: 'bottom',
             labels: {
                 usePointStyle: true,
-                padding: 20,
+                padding: 15,
                 font: {
                     size: 12,
                     weight: '500'
@@ -204,6 +205,14 @@ const radarChartOptions = {
                     weight: '500'
                 }
             }
+        }
+    },
+    layout: {
+        padding: {
+            top: 20,
+            bottom: 20,
+            left: 20,
+            right: 20
         }
     }
 };
