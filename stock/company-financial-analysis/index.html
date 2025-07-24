@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>삼성전자 vs LG전자 재무지표 비교 분석</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1 class="main-title">삼성전자 vs LG전자 재무지표 비교 분석</h1>
+        
+        <!-- ROE 추이 차트 -->
+        <div class="chart-container">
+            <h2 class="chart-title">ROE (자기자본수익률) 추이 (2020-2023)</h2>
+            <div class="chart-wrapper">
+                <canvas id="roeChart"></canvas>
+            </div>
+            <p class="chart-description">
+                분석: 삼성전자는 2021-2022년 메모리 슈퍼사이클로 높은 ROE를 기록했으나, 2023년 업황 악화로 하락. LG전자는 상대적으로 안정적인 추세 유지
+            </p>
+        </div>
+
+        <!-- 영업이익률 추이 차트 -->
+        <div class="chart-container">
+            <h2 class="chart-title">영업이익률 추이 (2020-2023)</h2>
+            <div class="chart-wrapper">
+                <canvas id="operatingMarginChart"></canvas>
+            </div>
+            <p class="chart-description">
+                분석: 삼성전자의 영업이익률 변동성이 크게 나타남. LG전자는 낮지만 안정적인 수익성 유지
+            </p>
+        </div>
+
+        <!-- 재무 안정성 지표 -->
+        <div class="chart-container">
+            <h2 class="chart-title">2023년 재무 안정성 지표 비교</h2>
+            <div class="financial-grid">
+                <div class="financial-card">
+                    <h3>부채비율(%)</h3>
+                    <div class="metric-item">
+                        <span>삼성전자</span>
+                        <span class="value samsung">89</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>LG전자</span>
+                        <span class="value lg">156</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>업종평균</span>
+                        <span class="value industry">128</span>
+                    </div>
+                </div>
+                
+                <div class="financial-card">
+                    <h3>유동비율(%)</h3>
+                    <div class="metric-item">
+                        <span>삼성전자</span>
+                        <span class="value samsung">212</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>LG전자</span>
+                        <span class="value lg">158</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>업종평균</span>
+                        <span class="value industry">165</span>
+                    </div>
+                </div>
+                
+                <div class="financial-card">
+                    <h3>이자보상배율(배)</h3>
+                    <div class="metric-item">
+                        <span>삼성전자</span>
+                        <span class="value samsung">35</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>LG전자</span>
+                        <span class="value lg">12</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>업종평균</span>
+                        <span class="value industry">18</span>
+                    </div>
+                </div>
+            </div>
+            <p class="chart-description">
+                분석: 삼성전자가 모든 안정성 지표에서 우수한 성과. 특히 부채비율이 낮고 이자보상배율이 높아 재무 안정성이 뛰어남
+            </p>
+        </div>
+
+        <!-- 종합 레이더 차트 -->
+        <div class="chart-container">
+            <h2 class="chart-title">종합 재무지표 레이더 차트 (2023년 기준)</h2>
+            <div class="chart-wrapper">
+                <canvas id="radarChart"></canvas>
+            </div>
+            <p class="chart-description">
+                분석: 삼성전자는 수익성과 안정성에서 우위, LG전자는 활동성과 성장성에서 상대적 강점 보임
+            </p>
+        </div>
+
+        <!-- 투자 권고 요약 -->
+        <div class="summary-container">
+            <h2 class="chart-title">투자 분석 요약</h2>
+            <div class="summary-grid">
+                <div class="summary-card samsung-card">
+                    <h3>삼성전자</h3>
+                    <ul>
+                        <li><strong>강점:</strong> 높은 수익성, 우수한 재무안정성</li>
+                        <li><strong>특징:</strong> 반도체 사이클에 따른 변동성</li>
+                        <li><strong>주의점:</strong> 업황 변화에 민감</li>
+                        <li><strong>투자성격:</strong> 대형 우량주, 배당주</li>
+                    </ul>
+                </div>
+                <div class="summary-card lg-card">
+                    <h3>LG전자</h3>
+                    <ul>
+                        <li><strong>강점:</strong> 안정적 성장, 다각화된 사업구조</li>
+                        <li><strong>특징:</strong> 전장사업 성장 가능성</li>
+                        <li><strong>주의점:</strong> 상대적으로 낮은 수익성</li>
+                        <li><strong>투자성격:</strong> 안정성장주</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="strategy-box">
+                <p><strong>투자 전략:</strong> 삼성전자는 반도체 업황 회복 시점에, LG전자는 전장사업 성장 모멘텀 확인 후 투자 고려</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
