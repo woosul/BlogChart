@@ -10,7 +10,7 @@ const roeData = {
             borderWidth: 3,
             pointRadius: 6,
             pointHoverRadius: 8,
-            tension: 0.1
+            tension: 0.4
         },
         {
             label: 'LG전자',
@@ -20,7 +20,7 @@ const roeData = {
             borderWidth: 3,
             pointRadius: 6,
             pointHoverRadius: 8,
-            tension: 0.1
+            tension: 0.4
         },
         {
             label: '업종평균',
@@ -31,7 +31,7 @@ const roeData = {
             pointRadius: 4,
             pointHoverRadius: 6,
             borderDash: [5, 5],
-            tension: 0.1
+            tension: 0.4
         }
     ]
 };
@@ -47,7 +47,7 @@ const operatingMarginData = {
             borderWidth: 3,
             pointRadius: 6,
             pointHoverRadius: 8,
-            tension: 0.1
+            tension: 0.4
         },
         {
             label: 'LG전자',
@@ -57,7 +57,7 @@ const operatingMarginData = {
             borderWidth: 3,
             pointRadius: 6,
             pointHoverRadius: 8,
-            tension: 0.1
+            tension: 0.4
         },
         {
             label: '업종평균',
@@ -68,7 +68,7 @@ const operatingMarginData = {
             pointRadius: 4,
             pointHoverRadius: 6,
             borderDash: [5, 5],
-            tension: 0.1
+            tension: 0.4
         }
     ]
 };
